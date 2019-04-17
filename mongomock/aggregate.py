@@ -163,7 +163,10 @@ class _Parser(object):
                     "'%s' is a valid operation but it is not supported by Mongomock yet." % k)
             if k.startswith('$'):
                 raise OperationFailure("Unrecognized expression '%s'" % k)
-            value_dict[k] = self.parse(v)
+            try:
+                value_dict[k] = self.parse(v)
+            except KeyError:
+                pass
 
         return value_dict
 
@@ -178,46 +181,84 @@ class _Parser(object):
         return expression
 
     def _handle_arithmetic_operator(self, operator, values):
-        if operator == '$abs':
-            return abs(self.parse(values))
+        unary_operators = {
+            '$abs': abs,
+            '$ceil': math.ceil,
+            '$exp': math.exp,
+            '$floor': math.floor,
+            '$ln': math.log,
+            '$log10': math.log10,
+            '$sqrt': math.sqrt,
+            '$trunc': math.trunc
+        }
+        binary_operators = {
+            '$divide': lambda x, y: x / y,
+            '$log': math.log,
+            '$mod': math.fmod,
+            '$pow': math.pow,
+            '$subtract': lambda x, y: x - y,
+        }
+        if operator in unary_operators:
+            if isinstance(values, list):
+                if len(values) != 1:
+                    raise OperationFailure('Expression %s takes exactly 1 arguments. %d were passed in.'
+                                           % (operator, len(values)))
+                values = values[0]
+            try:
+                return None if self.parse(values) is None else unary_operators[operator](self.parse(values))
+            except KeyError:
+                return None
+        if operator in binary_operators:
+            if not isinstance(values, list):
+                raise OperationFailure('Expression %s takes exactly 2 arguments. 1 were passed in.' % operator)
+            if len(values) != 2:
+                raise OperationFailure('Expression %s takes exactly 2 arguments. %d were passed in.'
+                                       % (operator, len(values)))
+            try:
+                values = list(map(self.parse, values))
+            except KeyError:
+                return None
+            if None in values:
+                return None
+            if operator == '$subtract' and isinstance(values[0], datetime.datetime):
+                if isinstance(values[1], datetime.datetime):
+                    return round((values[0] - values[1]).total_seconds() * 1000)
+                return values[0] - datetime.timedelta(milliseconds=values[1])
+            return binary_operators[operator](values[0], values[1])
         if operator == '$add':
-            return sum(self.parse(value) for value in values)
-        if operator == '$ceil':
-            return math.ceil(self.parse(values))
-        if operator == '$divide':
-            assert len(values) == 2, 'divide must have only 2 items'
-            return self.parse(values[0]) / self.parse(values[1])
-        if operator == '$exp':
-            return math.exp(self.parse(values))
-        if operator == '$floor':
-            return math.floor(self.parse(values))
-        if operator == '$ln':
-            return math.log(self.parse(values))
-        if operator == '$log':
-            assert len(values) == 2, 'log must have only 2 items'
-            return math.log(self.parse(values[0]), self.parse(values[1]))
-        if operator == '$log10':
-            return math.log10(self.parse(values))
-        if operator == '$mod':
-            assert len(values) == 2, 'mod must have only 2 items'
-            return math.fmod(self.parse(values[0]), self.parse(values[1]))
+            if not isinstance(values, list):
+                values = [values]
+            parsed_dates = []
+            parsed_numbers = []
+            for value in values:
+                try:
+                    value = self.parse(value)
+                    if value is None:
+                        return None
+                    elif isinstance(value, datetime.datetime):
+                        parsed_dates.append(value)
+                    else:
+                        parsed_numbers.append(value)
+                except KeyError:
+                    return None
+            if len(parsed_dates) > 1:
+                raise OperationFailure('only one date allowed in an $add expression')
+            result = sum(parsed_numbers)
+            if len(parsed_dates) == 1:
+                result = parsed_dates[0] + datetime.timedelta(milliseconds=result)
+            return result
         if operator == '$multiply':
-            return moves.reduce(
-                lambda x, y: x * y,
-                (self.parse(value) for value in values))
-        if operator == '$pow':
-            assert len(values) == 2, 'pow must have only 2 items'
-            return math.pow(self.parse(values[0]), self.parse(values[1]))
-        if operator == '$sqrt':
-            return math.sqrt(self.parse(values))
-        if operator == '$subtract':
-            assert len(values) == 2, 'subtract must have only 2 items'
-            res = self.parse(values[0]) - self.parse(values[1])
-            if isinstance(res, datetime.timedelta):
-                return round(res.total_seconds() * 1000)
-            return res
-        if operator == '$trunc':
-            return math.trunc(self.parse(values))
+            if not isinstance(values, list):
+                values = [values]
+            parsed_values = []
+            for value in values:
+                try:
+                    parsed_values.append(self.parse(value))
+                except KeyError:
+                    return None
+            if None in parsed_values:
+                return None
+            return moves.reduce(lambda x, y: x * y, parsed_values, 1)
         # This should never happen: it is only a safe fallback if something went wrong.
         raise NotImplementedError(  # pragma: no cover
             "Although '%s' is a valid aritmetic operator for the aggregation "
@@ -375,8 +416,12 @@ def _accumulate_group(output_fields, group_list):
         if field == '_id':
             continue
         for operator, key in six.iteritems(value):
-            key_getter = functools.partial(_parse_expression, key)
-            values = [key_getter(doc) for doc in group_list]
+            values = []
+            for doc in group_list:
+                try:
+                    values.append(_parse_expression(key, doc))
+                except KeyError:
+                    pass
             if operator in _GROUPING_OPERATOR_MAP:
                 doc_dict[field] = _GROUPING_OPERATOR_MAP[operator](values)
             elif operator == '$first':
@@ -752,8 +797,18 @@ def _handle_count_stage(in_collection, database, options):
     return [{options: len(in_collection)}]
 
 
+def _handle_add_fields_stage(in_collection, unused_database, options):
+    for doc in in_collection:
+        for key, value in options.items():
+            try:
+                doc[key] = _parse_expression(value, doc)
+            except KeyError:
+                pass
+    return in_collection
+
+
 _PIPELINE_HANDLERS = {
-    '$addFields': None,
+    '$addFields': _handle_add_fields_stage,
     '$bucket': _handle_bucket_stage,
     '$bucketAuto': None,
     '$collStats': None,

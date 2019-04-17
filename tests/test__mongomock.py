@@ -2405,6 +2405,24 @@ class MongoClientAggregateTest(_CollectionComparisonTest):
             'since': {'$subtract': ['$date', datetime.datetime(2014, 7, 4, 13, 0)]},
         }}])
 
+    def test__aggregate_subtract_date_and_timedelta(self):
+        self.cmp.compare.aggregate([{'$project': {
+            '_id': 0,
+            'since': {'$subtract': ['$date', 86400000]},
+        }}])
+
+    def test__aggregate_add_date_and_timedelta(self):
+        self.cmp.compare.aggregate([{'$project': {
+            '_id': 0,
+            'since': {'$add': ['$date', 86400000]},
+        }}])
+
+    def test__aggregate_add_date_and_timedeltas(self):
+        self.cmp.compare.aggregate([{'$project': {
+            '_id': 0,
+            'since': {'$add': [43200000, '$date', 86400000]},
+        }}])
+
     def test__aggregate_system_variables(self):
         self.cmp.do.drop()
         self.cmp.do.insert_many([
@@ -2498,6 +2516,141 @@ class MongoClientAggregateTest(_CollectionComparisonTest):
             'input': '$items',
             'cond': {'$lt': ['$$this.price', 100]},
         }}}}])
+
+    def test__aggregate34(self):
+        pipeline = [
+            {'$project': {
+                'c': {'$abs': [-2]},
+                'd': {'$floor': 2.3},
+                'e': {'$ln': None},
+                'f': {'$exp': '$non_existent_key'},
+                'g': {'$divide': [7, 3]},
+                'h': {'$log': [None, 1]},
+                'i': {'$mod': [1, None]},
+                'j': {'$pow': [None, None]},
+                'k': {'$subtract': ['$non_existent_key', 1]},
+                'l': {'$sum': []},
+                'm': {'$multiply': []},
+                'n': {'$add': '$a'},
+                'o': {'$multiply': [4]},
+                'p': {'$add': [1, 2, 3]},
+                'q': {'$multiply': [1, '$non_existent_key']},
+                'r': {'$add': '$non_existent_key'},
+                's': {'$multiply': [1, None]},
+                't': {'$add': [None, 1]},
+                'u': {'$multiply': ['$a', '$b', 4]},
+                'v': {'$multiply': '$b'}
+            }}
+        ]
+        self.cmp.compare.aggregate(pipeline)
+
+    def test__aggregate_exception(self):
+        with self.assertRaises(OperationFailure):
+            self.mongo_collection.aggregate([{'$project': {'c': {'$abs': [-2, 4]}}}])
+        with self.assertRaises(OperationFailure):
+            self.fake_collection.aggregate([{'$project': {'c': {'$abs': [-2, 4]}}}])
+
+        with self.assertRaises(OperationFailure):
+            self.mongo_collection.aggregate([{'$project': {'c': {'$floor': []}}}])
+        with self.assertRaises(OperationFailure):
+            self.fake_collection.aggregate([{'$project': {'c': {'$floor': []}}}])
+
+        with self.assertRaises(OperationFailure):
+            self.mongo_collection.aggregate([{'$project': {'c': {'$divide': 5}}}])
+        with self.assertRaises(OperationFailure):
+            self.fake_collection.aggregate([{'$project': {'c': {'$divide': 5}}}])
+
+        with self.assertRaises(OperationFailure):
+            self.mongo_collection.aggregate([{'$project': {'c': {'$log': [5]}}}])
+        with self.assertRaises(OperationFailure):
+            self.fake_collection.aggregate([{'$project': {'c': {'$og': [5]}}}])
+
+        with self.assertRaises(OperationFailure):
+            self.mongo_collection.aggregate([{'$project': {'c': {'$mod': [5, 3, 1]}}}])
+        with self.assertRaises(OperationFailure):
+            self.fake_collection.aggregate([{'$project': {'c': {'$mod': [5, 3, 1]}}}])
+
+        with self.assertRaises(OperationFailure):
+            self.mongo_collection.aggregate([{'$project': {'c': {'$add': ['$date', 1, '$date']}}}])
+        with self.assertRaises(OperationFailure):
+            self.fake_collection.aggregate([{'$project': {'c': {'$add': ['$date', 1, '$date']}}}])
+
+    def test__add_fields(self):
+        self.cmp.compare.aggregate([{'$addFields': {'c': 3}}])
+        self.cmp.compare.aggregate([{'$addFields': {'c': 4}}])
+        self.cmp.compare.aggregate([{'$addFields': {'b': {'$add': ['$a', '$b', 5]}}}])
+
+    def test__group_with_missing_fields1(self):
+        self.cmp.do.remove()
+
+        data = [
+            {'a': 0, 'b': 0},
+            {'a': 0},
+            {'b': 0},
+            {}
+        ]
+        self.cmp.do.insert(data)
+
+        pipeline = [
+            {'$group': {'_id': {'a': '$a', 'b': '$b'}}},
+        ]
+        self.cmp.compare_ignore_order.aggregate(pipeline)
+
+    def test__group_with_missing_fields2(self):
+        self.cmp.do.remove()
+
+        data = [
+            {'a': 0},
+            {}
+        ]
+        self.cmp.do.insert(data)
+
+        pipeline = [
+            {'$group': {'_id': {'a': '$a'}}},
+        ]
+        self.cmp.compare_ignore_order.aggregate(pipeline)
+
+    def test__group_with_missing_fields3(self):
+        self.cmp.do.remove()
+
+        data = [
+            {'a': 0},
+            {}
+        ]
+        self.cmp.do.insert(data)
+
+        pipeline = [
+            {'$group': {'_id': '$a'}},
+        ]
+        self.cmp.compare_ignore_order.aggregate(pipeline)
+
+    def test__aggregate_with_missing_fields1(self):
+        self.cmp.do.remove()
+
+        data = [
+            {'a': 0, 'b': 1},
+            {'a': 0},
+        ]
+        self.cmp.do.insert(data)
+
+        pipeline = [
+            {'$group': {'_id': '$a', 'b': {'$sum': '$b'}}},
+        ]
+        self.cmp.compare_ignore_order.aggregate(pipeline)
+
+    def test__add_fields_with_missing_fields(self):
+        self.cmp.do.remove()
+
+        data = [
+            {'a': 0},
+            {}
+        ]
+        self.cmp.do.insert(data)
+
+        pipeline = [
+            {'$addFields': {'b': '$a'}},
+        ]
+        self.cmp.compare_ignore_order.aggregate(pipeline)
 
 
 def _LIMIT(*args):
