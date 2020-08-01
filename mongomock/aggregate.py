@@ -316,7 +316,16 @@ class _Parser(object):
         if operator == '$arrayElemAt':
             key, index = values
             array = self._parse_basic_expression(key)
-            return array[index]
+
+            if index < len(array):
+                return array[index]
+            # As I understood, this type of exception will be caught in the top
+            # level function. This may slow down execution, but I don't know how
+            # else to return NO_VALUE in this architecture.
+            raise KeyError(
+                'Array have length less than index value'
+            )
+
         raise NotImplementedError("Although '%s' is a valid project operator for the "
                                   'aggregation pipeline, it is currently not implemented '
                                   'in Mongomock.' % operator)

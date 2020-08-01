@@ -2866,6 +2866,23 @@ class MongoClientAggregateTest(_CollectionComparisonTest):
             }},
         ])
 
+    def test__aggregate_array_eleme_at(self):
+        self.cmp.do.drop()
+        self.cmp.do.insert_many([
+            {'values_list': [1, 2]},
+            {'values_list': [1, 2, 3]},
+        ])
+
+        self.cmp.compare.aggregate([
+            {
+                '$project': {
+                    'first_user_id': {
+                        '$arrayElemAt': ['$values_list', 2]
+                    }
+                }
+            }
+        ])
+
     def test__aggregate_filter(self):
         self.cmp.do.drop()
         self.cmp.do.insert_many([
