@@ -49,7 +49,7 @@ class MongoClient(object):
         else:
             self.host, self.port = split_hosts(self.host, default_port=self.port)[0]
 
-        self.__default_datebase_name = dbase
+        self.__default_database_name = dbase
 
     def __getitem__(self, db_name):
         return self.get_database(db_name)
@@ -141,10 +141,10 @@ class MongoClient(object):
         return db
 
     def get_default_database(self):
-        if self.__default_datebase_name is None:
+        if self.__default_database_name is None:
             raise ConfigurationError('No default database defined')
 
-        return self[self.__default_datebase_name]
+        return self[self.__default_database_name]
 
     def alive(self):
         """The original MongoConnection.alive method checks the status of the server.
