@@ -39,11 +39,16 @@ dependencies = [
   "pylint==3.0.*",
   "mypy==1.8.*",
   "hacking==6.1.0",
+  "ruff==0.2.*",
 ]
 
 [envs.lint.scripts]
 style = [
-  "pylint mongomock tests {args}",
-  "flake8 {args}",
+  "ruff format --check --diff {args:.}",
+  "ruff check {args:.}",
 ]
 typing = "mypy --install-types --non-interactive tests/types"
+fmt = [
+  "ruff format {args:.}",
+  "ruff check --fix-only {args:.}",
+]

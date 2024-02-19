@@ -49,29 +49,35 @@ source = "vcs"
 [tool.hatch.build.targets.wheel]
 packages = ["mongomock"]
 
+[tool.ruff]
+target-version = "py38"
+line-length = 100
 
-[tool.pylint."messages control"]
-disable = [
-    "missing-docstring",
-    "R",
-    "invalid-name",
-    "fixme",
-    "unused-argument",
-    "redefined-builtin",
-    "protected-access",
-    "wrong-import-order",
-    "attribute-defined-outside-init",
-    "cell-var-from-loop",
-    "broad-except",
-    "dangerous-default-value",
-    "too-many-lines",
-    "ungrouped-imports",
-    "no-member",
-    "too-many-function-args",
-    "consider-using-f-string",
-    "deprecated-class",
-    "redundant-u-string-prefix",
-    "unused-private-member",
-    "unspecified-encoding",
+[tool.ruff.format]
+exclude = [
+    "mongomock/__init__.pyi",
 ]
-enable = ["no-else-return"]
+
+[tool.ruff.lint]
+select = ["A", "B", "C", "C4", "E", "F", "I", "N", "Q", "RUF", "S", "SIM", "T10", "UP", "W", "YTT"]
+fixable = ["RUF100", "I001", "SIM300", "UP008", "UP003", "C403", "UP031", "UP032"]
+ignore = [
+    "S101",   # Allow usage of asserts
+    "A001",   # Allow shadowing bultins 
+    "A003",   # Allow shadowing bultins on classes
+    "N818",   # Allow exceptions without Error suffix
+    "UP006",  # Allow typing.Tuple
+    "UP007",  # Allow typing.Union
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/test__mongomock.py" = ["N802"]
+"tests/test__gridfs.py" = ["N802"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 40
+
+[tool.ruff.lint.isort]
+order-by-type = false
+force-single-line = true
+lines-after-imports = 2
