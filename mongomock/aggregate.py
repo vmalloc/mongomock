@@ -1375,6 +1375,15 @@ def _handle_sort_stage(in_collection, unused_database, options):
                 reverse=sortDirection < 0)
     return sorted_collection
 
+def _handle_fill(in_collection, unused_database, options):
+    key_to_fill = list(options["output"])[0]
+    value_to_fill = options["output"][key_to_fill]["value"]
+    out_collection = [dict(doc) for doc in in_collection]
+    for out_doc in out_collection:
+        if key_to_fill not in out_doc:
+            out_doc[key_to_fill] = value_to_fill
+    return out_collection
+
 
 def _handle_unwind_stage(in_collection, unused_database, options):
     if not isinstance(options, dict):
@@ -1637,6 +1646,7 @@ _PIPELINE_HANDLERS = {
     '$sortByCount': None,
     '$unset': None,
     '$unwind': _handle_unwind_stage,
+    '$fill': _handle_fill,
 }
 
 
