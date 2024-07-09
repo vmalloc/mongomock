@@ -1,30 +1,22 @@
 [envs.test]
-dependencies = [
-  "pytest==7.3.*",
-  "pytest-cov==4.1.*",
-  "coverage[toml]==7.2.*",
-]
 features = ["pyexecjs"]
 
 [envs.test.env-vars]
 EXECJS_RUNTIME = "node"
 
-[envs.test.scripts]
-run =  "coverage run -p -m pytest {args:.}"
-
-[envs.test.overrides]
+[envs.hatch-test.overrides]
 matrix.pymongo.extra-dependencies = [
   { value = "pymongo<4.0", if = ["3"]},
   { value = "pymongo<5.0", if = ["4"]},
 ]
 
-[[envs.test.matrix]]
+[[envs.hatch-test.matrix]]
 python = ["3.8", "3.9", "3.10", "3.11", "3.12", "pypy3"]
 pymongo = ["3", "4", "none"]
 
 [envs.cov]
 dependencies = [
-  "coverage[toml]==7.2.*",
+  "coverage[toml]==7.5.*",
 ]
 
 [envs.cov.scripts]
@@ -36,8 +28,8 @@ collect = [
 
 [envs.lint]
 dependencies = [
-  "pylint==3.0.*",
-  "mypy==1.8.*",
+  "pylint==3.2.*",
+  "mypy==1.10.*",
   "hacking==6.1.0",
 ]
 
