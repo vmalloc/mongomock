@@ -28,7 +28,7 @@ collect = [
 
 [envs.lint]
 dependencies = [
-  "pylint==3.2.*",
+  "pylint==3.0.*",
   "mypy==1.10.*",
   "hacking==6.1.0",
 ]
