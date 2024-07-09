@@ -15,8 +15,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install dependencies
-        run: pip install hatch
+      - name: Install hatch
+        uses: pypa/hatch@install
       - name: Lint style
         run: hatch run lint:style
 
@@ -28,8 +28,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install dependencies
-        run: pip install hatch
+      - name: Install hatch
+        uses: pypa/hatch@install
       - name: Lint typing
         run: hatch run lint:typing
 
