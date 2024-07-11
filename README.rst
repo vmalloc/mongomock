@@ -1,10 +1,11 @@
-.. image:: https://app.travis-ci.com/mongomock/mongomock.svg?branch=develop
-  :target: https://app.travis-ci.com/mongomock/mongomock
-
-|pypi_version| |pypi_license| |pypi_wheel|
-
-.. image:: https://codecov.io/gh/mongomock/mongomock/branch/develop/graph/badge.svg
-  :target: https://codecov.io/gh/mongomock/mongomock
+.. image:: https://img.shields.io/pypi/v/mongomock.svg?style=flat-square
+    :target: https://pypi.python.org/pypi/mongomock
+.. image:: https://img.shields.io/github/actions/workflow/status/mongomock/mongomock/lint-and-test.yml?branch=develop&style=flat-square
+    :target: https://github.com/mongomock/mongomock/actions?query=workflow%3Alint-and-test
+.. image:: https://img.shields.io/pypi/l/mongomock.svg?style=flat-square
+    :target: https://pypi.python.org/pypi/mongomock
+.. image:: https://img.shields.io/codecov/c/github/mongomock/mongomock.svg?style=flat-square
+  	:target: https://codecov.io/gh/mongomock/mongomock
 
 
 What is this?
@@ -128,50 +129,44 @@ When submitting a PR, please make sure that:
 1. You include tests for the feature you are adding or bug you are fixing. Preferably, the test should
    compare against the real MongoDB engine (see `examples in tests`_ for reference).
 2. No existing test got deleted or unintentionally castrated
-3. The travis build passes on your PR.
+3. The build passes on your PR.
 
 To download, setup and perfom tests, run the following commands on Mac / Linux:
 
-.. code-block:: bash
+.. code-block:: console
 
- git clone git@github.com:mongomock/mongomock.git
- pip install tox
- cd mongomock
- tox
+ $ git clone git@github.com:mongomock/mongomock.git
+ $ pipx install hatch
+ $ cd mongomock
+ $ hatch test
 
 Alternatively, docker-compose can be used to simplify dependency management for local development:
 
-.. code-block:: bash
+.. code-block:: console
 
- git clone git@github.com:mongomock/mongomock.git
- cd mongomock
- docker-compose build
- docker-compose run --rm mongomock
+ $ git clone git@github.com:mongomock/mongomock.git
+ $ cd mongomock
+ $ docker compose build
+ $ docker compose run --rm mongomock
 
-If you need/want tox to recreate its environments, you can override the container command by running:
+If you want to run ``hatch`` against a specific environment in the container:
 
-.. code-block:: bash
+.. code-block:: console
 
- docker-compose run --rm mongomock tox -r
-
-Similarly, if you'd like to run tox against a specific environment in the container:
-
-.. code-block:: bash
-
- docker-compose run --rm mongomock tox -e py38-pymongo-pyexecjs
+ $ docker compose run --rm mongomock hatch test -py=3.11 -i pymongo=4
 
 If you'd like to run only one test, you can also add the test name at the end of your command:
 
-.. code-block:: bash
+.. code-block:: console
 
- docker-compose run --rm mongomock tox -e py38-pymongo-pyexecjs tests.test__mongomock.MongoClientCollectionTest.test__aggregate_system_variables_generate_array
+ $ docker compose run --rm mongomock hatch test -py=3.12 -i pymongo=4 tests/test__mongomock.py::MongoClientCollectionTest::test__insert
 
 NOTE: If the MongoDB image was updated, or you want to try a different MongoDB version in docker-compose,
-you'll have to issue a `docker-compose down` before you do anything else to ensure you're running against
+you'll have to issue a ``docker compose down`` before you do anything else to ensure you're running against
 the intended version.
 
 utcnow
-~~~~
+~~~~~~
 
 When developing features that need to make use of "now," please use the libraries :code:`utcnow` helper method
 in the following way:
@@ -273,22 +268,5 @@ Also, many thanks go to the following people for helping out, contributing pull 
 * lidongyong
 * `Juan Gutierrez <https://github.com/juannyg/>`_
 
-
 .. _examples in tests: https://github.com/mongomock/mongomock/blob/develop/tests/test__mongomock.py
-
 .. _gitflow workflow: https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
-
-
-.. |travis| image:: https://travis-ci.org/mongomock/mongomock.svg?branch=develop
-    :target: https://travis-ci.org/mongomock/mongomock
-    :alt: Travis CI build
-
-.. |pypi_version| image:: https://img.shields.io/pypi/v/mongomock.svg
-    :target: https://pypi.python.org/pypi/mongomock
-    :alt: PyPI package
-
-.. |pypi_license| image:: https://img.shields.io/pypi/l/mongomock.svg
-    :alt: PyPI license
-
-.. |pypi_wheel| image:: https://img.shields.io/pypi/wheel/mongomock.svg
-    :alt: PyPI wheel status
