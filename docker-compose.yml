@@ -1,12 +1,10 @@
-version: "3.8"
 services:
-
   mongomock:
     build:
       context: .
     image: mongomock:latest
     working_dir: /project
-    command: hatch run test:run
+    command: hatch test
     environment:
       - TEST_MONGO_HOST=mongodb://mongo/mock
       - MONGODB=5.0.5
