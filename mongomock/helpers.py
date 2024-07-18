@@ -1,6 +1,6 @@
 from collections import abc
 from collections import OrderedDict
-from datetime import datetime, timedelta, tzinfo
+from datetime import datetime, timedelta, tzinfo, UTC
 from mongomock import InvalidURI
 from packaging import version
 import re
@@ -70,7 +70,7 @@ def utcnow():
             # Test some things "100 hours" in the future
     ```
     """
-    return datetime.utcnow()
+    return datetime.now(UTC)
 
 
 def print_deprecation_warning(old_param_name, new_param_name):
