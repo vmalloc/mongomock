@@ -9,6 +9,7 @@ import functools
 import itertools
 import math
 import numbers
+from typing import Dict, Union
 from packaging import version
 import random
 import re
@@ -1362,6 +1363,31 @@ def _handle_sample_stage(in_collection, unused_database, options):
     return shuffled[:size]
 
 
+def _handle_sort_by_count_stage(in_collection, unused_database, options: Union[str, Dict]):
+    key_count = {}
+    sort_by_count = []
+
+    if isinstance(options, Dict) and '$mergeObjects' in options:
+        raise NotImplementedError(
+            "Although '$mergeObjects' is a valid operator for the $sortByCount stage, "
+            'it is currently not implemented in Mongomock.'
+        )
+    field_to_count = options[1:]
+
+    for doc in in_collection:
+        field_value = doc.get(field_to_count)
+        if field_value is None:
+            continue
+        if field_value not in key_count:
+            key_count[field_value] = 0
+        key_count[field_value] += 1
+    
+    for value, count in key_count.items():
+        sort_by_count.append({'_id': value, 'count': count})
+    sort_by_count = sorted(sort_by_count, key=lambda x: x['count'], reverse=True)
+    return sort_by_count
+
+
 def _handle_sort_stage(in_collection, unused_database, options):
     sort_array = reversed([{x: y} for x, y in options.items()])
     sorted_collection = in_collection
@@ -1579,6 +1605,9 @@ def _handle_out_stage(in_collection, database, options):
 
 
 def _handle_count_stage(in_collection, database, options):
+    print(f"{in_collection=}")
+    print(f"{database=}")
+    print(f"{options=}")
     if not isinstance(options, str) or options == '':
         raise OperationFailure('the count field must be a non-empty string')
     elif options.startswith('$'):
@@ -1632,7 +1661,7 @@ _PIPELINE_HANDLERS = {
     '$set': _handle_add_fields_stage,
     '$skip': lambda c, d, o: c[o:],
     '$sort': _handle_sort_stage,
-    '$sortByCount': None,
+    '$sortByCount': _handle_sort_by_count_stage,
     '$unset': None,
     '$unwind': _handle_unwind_stage,
 }
