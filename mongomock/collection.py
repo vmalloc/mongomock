@@ -7,7 +7,7 @@ import functools
 import itertools
 import json
 import math
-from typing import Any
+from typing import Any, Union
 from packaging import version
 import time
 import warnings
@@ -42,8 +42,8 @@ except ImportError:
         pass
 
     def validate_collation_or_none(
-        value: Mapping[str, Any] | Collation | None
-    ) -> dict[str, Any] | None:
+        value: Union[Mapping[str, Any], Collation, None]
+    ) -> Union[dict[str, Any], None]:
         return value
 
 from sentinels import NOTHING
@@ -2034,7 +2034,7 @@ class Cursor(object):
     def alive(self):
         return self._emitted != len(self._compute_results(with_limit_and_skip=False))
 
-    def collation(self, collation: Collation | Mapping[str, Any]) -> "Cursor":
+    def collation(self, collation: Union[Collation, Mapping[str, Any]]) -> "Cursor":
         """Adds a :class:`~pymongo.collation.Collation` to this query.
         Raises :exc:`TypeError` if `collation` is not an instance of
         :class:`~pymongo.collation.Collation` or a ``dict``. Raises
