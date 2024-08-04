@@ -2036,6 +2036,7 @@ class Cursor(object):
 
     def collation(self, collation: Union[Collation, Mapping[str, Any]]) -> "Cursor":
         """Adds a :class:`~pymongo.collation.Collation` to this query.
+        
         Raises :exc:`TypeError` if `collation` is not an instance of
         :class:`~pymongo.collation.Collation` or a ``dict``. Raises
         :exc:`~pymongo.errors.InvalidOperation` if this :class:`Cursor` has
