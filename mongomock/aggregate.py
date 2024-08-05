@@ -1364,9 +1364,9 @@ def _handle_sample_stage(in_collection, unused_database, options):
 
 
 def _handle_sort_by_count_stage(in_collection, unused_database, options: Union[str, Dict]):
-    if isinstance(options, Dict) and '$mergeObjects' in options:
+    if isinstance(options, Dict):
         raise NotImplementedError(
-            "Although '$mergeObjects' is a valid operator for the $sortByCount stage, "
+            "Although a dictionary is a valid option for the $sortByCount stage, "
             'it is currently not implemented in Mongomock.'
         )
     field_to_count = options.lstrip("$")
