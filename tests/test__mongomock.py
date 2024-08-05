@@ -3589,7 +3589,7 @@ class MongoClientAggregateTest(_CollectionComparisonTest):
         self.cmp.compare.aggregate([{'$project': {'slice': {
             '$slice': ['$items', -10, 5]
         }}}])
-    
+
     def test__aggregate_no_entries(self):
         pipeline = [
             {'$match': {'a': {'$eq': 'Never going to happen'}}},
