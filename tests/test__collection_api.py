@@ -648,13 +648,13 @@ class CollectionAPITest(TestCase):
         self.assert_documents(documents, ignore_ids=False)
 
         doc = self.db.collection.find_one(
-            {'x': 1}, sort={'x': -1}
+            {'x': 1}, sort={'s': -1}
         )
 
         self.assertDictEqual(doc, documents[-2])
 
         doc = self.db.collection.find_one(
-            {'x': 1}, sort={'x': 1}
+            {'x': 1}, sort={'s': 1}
         )
 
         self.assertDictEqual(doc, documents[0])
