@@ -6,7 +6,7 @@ try:
     _IMPORT_MOCK_ERROR = None
 except ImportError:
     try:
-        import mock
+        from unittest import mock
         _IMPORT_MOCK_ERROR = None
     except ImportError as error:
         _IMPORT_MOCK_ERROR = error
