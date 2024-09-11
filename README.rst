@@ -5,7 +5,7 @@
 .. image:: https://img.shields.io/pypi/l/mongomock.svg?style=flat-square
     :target: https://pypi.python.org/pypi/mongomock
 .. image:: https://img.shields.io/codecov/c/github/mongomock/mongomock.svg?style=flat-square
-  	:target: https://codecov.io/gh/mongomock/mongomock
+    :target: https://codecov.io/gh/mongomock/mongomock
 
 
 What is this?
@@ -101,9 +101,9 @@ MongoDB is complex. This library aims at a reasonably complete mock of MongoDB f
 not a perfect replica. This means some features are not likely to make it in any time soon.
 
 Also, since many corner cases are encountered along the way, our goal is to try and TDD our way into
-completeness. This means that every time we encounter a missing or broken (incompatible) feature, we
-write a test for it and fix it. There are probably lots of such issues hiding around lurking, so feel
-free to open issues and/or pull requests and help the project out!
+completeness. This means that every time we encounter a missing or broken (incompatible) feature,
+we write a test for it and fix it. There are probably lots of such issues hiding around lurking,
+so feel free to open issues and/or pull requests and help the project out!
 
 **NOTE**: We don't include pymongo functionality as "stubs" or "placeholders". Since this library is
 used to validate production code, it is unacceptable to behave differently than the real pymongo
@@ -126,8 +126,8 @@ Contributing
 
 When submitting a PR, please make sure that:
 
-1. You include tests for the feature you are adding or bug you are fixing. Preferably, the test should
-   compare against the real MongoDB engine (see `examples in tests`_ for reference).
+1. You include tests for the feature you are adding or bug you are fixing. Preferably, the test
+   should compare against the real MongoDB engine (see `examples in tests`_ for reference).
 2. No existing test got deleted or unintentionally castrated
 3. The build passes on your PR.
 
@@ -161,15 +161,15 @@ If you'd like to run only one test, you can also add the test name at the end of
 
  $ docker compose run --rm mongomock hatch test -py=3.12 -i pymongo=4 tests/test__mongomock.py::MongoClientCollectionTest::test__insert
 
-NOTE: If the MongoDB image was updated, or you want to try a different MongoDB version in docker-compose,
-you'll have to issue a ``docker compose down`` before you do anything else to ensure you're running against
-the intended version.
+NOTE: If the MongoDB image was updated, or you want to try a different MongoDB version in
+``docker-compose``, you'll have to issue a ``docker compose down`` before you do anything else to
+ensure you're running against the intended version.
 
 utcnow
 ~~~~~~
 
-When developing features that need to make use of "now," please use the libraries :code:`utcnow` helper method
-in the following way:
+When developing features that need to make use of "now," please use the libraries :code:`utcnow`
+helper method in the following way:
 
 .. code-block:: python
 
@@ -177,15 +177,16 @@ in the following way:
    # Awesome code!
    now_reference = mongomock.utcnow()
 
-This provides users a consistent way to mock the notion of "now" in mongomock if they so choose. Please
-see `utcnow docstring for more details <mongomock/helpers.py#L52>`_.
+This provides users a consistent way to mock the notion of "now" in mongomock if they so choose.
+Please see `utcnow docstring for more details <mongomock/helpers.py#L52>`_.
 
 Branching model
 ~~~~~~~~~~~~~~~
 
-The branching model used for this project follows the `gitflow workflow`_.  This means that pull requests
-should be issued against the `develop` branch and *not* the `master` branch. If you want to contribute to
-the legacy 2.x branch then your pull request should go into the `support/2.x` branch.
+The branching model used for this project follows the `gitflow workflow`_.  This means that pull
+requests should be issued against the `develop` branch and *not* the `master` branch. If you want
+to contribute to the legacy 2.x branch then your pull request should go into the `support/2.x`
+branch.
 
 Releasing
 ~~~~~~~~~
@@ -198,18 +199,19 @@ then generate the release notes locally with:
 
 .. code-block:: bash
 
-python3 -c "from pbr import git; git.write_git_changelog()"
+  python -c "from pbr import git; git.write_git_changelog()"
 
 Then you can get the relevant section in the generated `Changelog` file.
 
 Acknowledgements
 ----------------
 
-Mongomock has originally been developed by `Rotem Yaari <https://github.com/vmalloc/>`_, then by 
-`Martin Domke <https://github.com/mdomke>`_. It is currently being developed and maintained by 
+Mongomock has originally been developed by `Rotem Yaari <https://github.com/vmalloc/>`_, then by
+`Martin Domke <https://github.com/mdomke>`_. It is currently being developed and maintained by
 `Pascal Corpet <https://github.com/pcorpet>`_ .
 
-Also, many thanks go to the following people for helping out, contributing pull requests and fixing bugs:
+Also, many thanks go to the following people for helping out, contributing pull requests and fixing
+bugs:
 
 * Alec Perkins
 * Alexandre Viau

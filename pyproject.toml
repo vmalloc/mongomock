@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "mongomock"
 dynamic = ["version"]
 description = "Fake pymongo stub for testing simple MongoDB-dependent code"
-readme = { file = "README.rst", content-type = "text/x-rst" }
+readme = "README.rst"
 license = { file = "LICENSE" }
 authors = [
     { name = "Rotem Yaari", email = "vmalloc@gmail.com" },
@@ -76,3 +76,6 @@ disable = [
     "unspecified-encoding",
 ]
 enable = ["no-else-return"]
+
+[tool.doc8]
+max-line-length = 100

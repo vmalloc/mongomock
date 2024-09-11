@@ -39,3 +39,10 @@ style = [
   "flake8 {args}",
 ]
 typing = "mypy --install-types --non-interactive tests/types"
+
+[envs.docs]
+extra-dependencies = [
+  "doc8==1.1.*",
+  "pygments==2.16.*",
+]
+scripts = { check = "doc8 README.rst" }
