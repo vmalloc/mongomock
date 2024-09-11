@@ -635,6 +635,30 @@ class CollectionAPITest(TestCase):
         doc.pop('_id')
         self.assertDictEqual(doc, replacement)
 
+    def test__find_one_sorting(self):
+        documents = [
+            {'x': 1, 's': 0},
+            {'x': 1, 's': 1},
+            {'x': 4, 's': 1},
+            {'x': 1, 's': 2},
+            {'x': 1, 's': 3},
+            {'x': 9, 's': 1}
+        ]
+        self.db.collection.insert_many(documents)
+        self.assert_documents(documents, ignore_ids=False)
+
+        doc = self.db.collection.find_one(
+            {'x': 1}, sort={'s': -1}
+        )
+
+        self.assertDictEqual(doc, documents[-2])
+
+        doc = self.db.collection.find_one(
+            {'x': 1}, sort={'s': 1}
+        )
+
+        self.assertDictEqual(doc, documents[0])
+
     def test__find_one_and_update(self):
         documents = [
             {'x': 1, 's': 0},
