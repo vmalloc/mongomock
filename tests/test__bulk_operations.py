@@ -1,9 +1,9 @@
 import os
+from unittest import mock
 
 import mongomock
 from mongomock import helpers
 from packaging import version
-from unittest import mock
 
 try:
     import pymongo

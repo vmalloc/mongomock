@@ -1061,6 +1061,8 @@ class Collection:
     def _get_dataset(self, spec, sort, fields, as_class):
         dataset = self._iter_documents(spec)
         if sort:
+            if isinstance(sort, dict):
+                sort = sort.items()
             for sort_key, sort_direction in reversed(sort):
                 if sort_key == '$natural':
                     if sort_direction < 0:

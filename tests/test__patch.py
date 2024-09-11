@@ -1,5 +1,7 @@
+import platform
 import time
 import unittest
+from unittest import mock
 
 import mongomock
 
@@ -9,9 +11,7 @@ try:
 except ImportError:
     _HAVE_PYMONGO = False
 
-from unittest import mock
 
-import platform
 _USING_PYPY = platform.python_implementation() == 'PyPy'
 
 

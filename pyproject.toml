@@ -6,11 +6,12 @@ build-backend = "hatchling.build"
 name = "mongomock"
 dynamic = ["version"]
 description = "Fake pymongo stub for testing simple MongoDB-dependent code"
-readme = { file = "README.rst", content-type = "text/x-rst" }
+readme = "README.rst"
 license = { file = "LICENSE" }
 authors = [
     { name = "Rotem Yaari", email = "vmalloc@gmail.com" },
     { name = "Martin Domke", email = "mail@martindomke.net" },
+    { name = "Pascal Corpet", email = "pascal@corpet.net" },
 ]
 classifiers = [
     "License :: OSI Approved :: ISC License (ISCL)",
@@ -53,21 +54,19 @@ packages = ["mongomock"]
 target-version = "py38"
 line-length = 100
 
-[tool.ruff.format]
-exclude = [
-    "mongomock/__init__.pyi",
-]
-
 [tool.ruff.lint]
-select = ["A", "B", "C", "C4", "E", "F", "I", "N", "Q", "RUF", "S", "SIM", "T10", "UP", "W", "YTT"]
-fixable = ["RUF100", "I001", "SIM300", "UP008", "UP003", "C403", "UP031", "UP032"]
-ignore = [
+extend-select = ["A", "B", "C", "C4", "E", "F", "I", "N", "Q", "RUF", "S", "SIM", "T10", "UP", "W", "YTT"]
+extend-fixable = ["RUF100", "I001", "SIM300", "UP008", "UP003", "C403", "UP031", "UP032"]
+extend-ignore = [
     "S101",   # Allow usage of asserts
     "A001",   # Allow shadowing bultins 
     "A003",   # Allow shadowing bultins on classes
     "N818",   # Allow exceptions without Error suffix
     "UP006",  # Allow typing.Tuple
     "UP007",  # Allow typing.Union
+]
+exclude = [
+    "mongomock/__init__.pyi",
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -81,3 +80,6 @@ max-complexity = 40
 order-by-type = false
 force-single-line = true
 lines-after-imports = 2
+
+[tool.doc8]
+max-line-length = 100
