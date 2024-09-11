@@ -219,7 +219,7 @@ _GROUPING_OPERATOR_MAP = {
 }
 
 
-class _Parser(object):
+class _Parser:
     """Helper to parse expressions within the aggregate pipeline."""
 
     def __init__(self, doc_dict, user_vars=None, ignore_missing_keys=False):
@@ -390,7 +390,7 @@ class _Parser(object):
                 return res
 
         assert isinstance(values, (tuple, list)), \
-            "Parameter to %s must evaluate to a list, got '%s'" % (operator, type(values))
+            "Parameter to {} must evaluate to a list, got '{}'".format(operator, type(values))
 
         parsed_values = list(self.parse_many(values))
         assert parsed_values, '%s must have at least one parameter' % operator
@@ -433,7 +433,7 @@ class _Parser(object):
                 raise InvalidDocument('$let only supports an object as its argument')
             for field in ('vars', 'in'):
                 if field not in value:
-                    raise OperationFailure("Missing '{}' parameter to $let".format(field))
+                    raise OperationFailure(f"Missing '{field}' parameter to $let")
             if not isinstance(value['vars'], dict):
                 raise OperationFailure('invalid parameter: expected an object (vars)')
             user_vars = {
@@ -686,7 +686,7 @@ class _Parser(object):
             for parsed_item in parsed_list:
                 if parsed_item is not None and not isinstance(parsed_item, (list, tuple)):
                     raise OperationFailure(
-                        '$concatArrays only supports arrays, not {}'.format(type(parsed_item))
+                        f'$concatArrays only supports arrays, not {type(parsed_item)}'
                     )
 
             return None if None in parsed_list else list(itertools.chain.from_iterable(parsed_list))
@@ -886,7 +886,7 @@ class _Parser(object):
 
             if not isinstance(parsed, (list, tuple)):
                 raise OperationFailure(
-                    '$arrayToObject requires an array input, found: {}'.format(type(parsed))
+                    f'$arrayToObject requires an array input, found: {type(parsed)}'
                 )
 
             if all(isinstance(x, dict) and set(x.keys()) == {'k', 'v'} for x in parsed):
@@ -912,7 +912,7 @@ class _Parser(object):
 
             if not isinstance(parsed, (dict, collections.OrderedDict)):
                 raise OperationFailure(
-                    '$objectToArray requires an object input, found: {}'.format(type(parsed))
+                    f'$objectToArray requires an object input, found: {type(parsed)}'
                 )
 
             if len(parsed) > 1 and sys.version_info < (3, 6):
@@ -1175,12 +1175,10 @@ def _recursive_get(match, nested_fields):
     if isinstance(head, (list, tuple)):
         for m in head:
             # Yield from _recursive_get(m, remaining_fields).
-            for answer in _recursive_get(m, remaining_fields):
-                yield answer
+            yield from _recursive_get(m, remaining_fields)
     elif isinstance(head, dict):
         # Yield from _recursive_get(head, remaining_fields).
-        for answer in _recursive_get(head, remaining_fields):
-            yield answer
+        yield from _recursive_get(head, remaining_fields)
 
 
 def _handle_graph_lookup_stage(in_collection, database, options):
@@ -1451,7 +1449,7 @@ def _combine_projection_spec(filter_list, original_filter, prefix=''):
         filter_dict[field] = filter_dict.get(field, []) + [subkey]
 
     return collections.OrderedDict(
-        (k, _combine_projection_spec(v, original_filter, prefix='%s%s.' % (prefix, k)))
+        (k, _combine_projection_spec(v, original_filter, prefix='{}{}.'.format(prefix, k)))
         for k, v in filter_dict.items()
     )
 

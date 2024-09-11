@@ -8,22 +8,12 @@ import re
 import sys
 from tests.diff import diff
 import time
-from unittest import TestCase, skipIf, skipUnless
+from unittest import TestCase, skipIf, skipUnless, mock
 import uuid
 import warnings
 
 import mongomock
 from mongomock import helpers
-
-try:
-    from unittest import mock
-    _HAVE_MOCK = True
-except ImportError:
-    try:
-        import mock
-        _HAVE_MOCK = True
-    except ImportError:
-        _HAVE_MOCK = False
 
 try:
     from bson import codec_options
@@ -1511,7 +1501,6 @@ class CollectionAPITest(TestCase):
         self.db.collection.insert_one({'value': ['a', 'b', 'c', 1, 2, 3]})
         self.assertEqual(self.db.collection.count_documents({}), 1)
 
-    @skipIf(not _HAVE_MOCK, 'mock not installed')
     def test__ttl_expiry_with_mock(self):
         now = datetime.utcnow()
         self.db.collection.create_index([('value', 1)], expireAfterSeconds=100)
