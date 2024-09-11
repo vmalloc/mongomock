@@ -1,9 +1,9 @@
 try:
-    from pymongo.results import BulkWriteResult
-    from pymongo.results import DeleteResult
-    from pymongo.results import InsertManyResult
-    from pymongo.results import InsertOneResult
-    from pymongo.results import UpdateResult
+    from pymongo.results import BulkWriteResult  # pylint: disable=unused-import
+    from pymongo.results import DeleteResult  # pylint: disable=unused-import
+    from pymongo.results import InsertManyResult  # pylint: disable=unused-import
+    from pymongo.results import InsertOneResult  # pylint: disable=unused-import
+    from pymongo.results import UpdateResult  # pylint: disable=unused-import
 except ImportError:
     class _WriteResult:
 
@@ -115,5 +115,6 @@ except ImportError:
         @property
         def upserted_ids(self):
             if self.__bulk_api_result:
-                return {upsert['index']: upsert['_id']
-                            for upsert in self.bulk_api_result['upserted']}
+                return {
+                    upsert['index']: upsert['_id'] for upsert in self.bulk_api_result['upserted']
+                }
