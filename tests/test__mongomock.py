@@ -4222,7 +4222,7 @@ class MongoClientAggregateTest(_CollectionComparisonTest):
         pipeline = [
             {
                 "$facet": {
-                    "pipeline_a": [{ "$sortByCount": "$a" }],
+                    "pipeline_a": [{"$sortByCount": "$a"}],
                 }
             }
         ]
@@ -4232,7 +4232,7 @@ class MongoClientAggregateTest(_CollectionComparisonTest):
         pipeline = [
             {
                 "$facet": {
-                    "pipeline_b": [{ "$sortByCount": "$b" }],
+                    "pipeline_b": [{"$sortByCount": "$b"}],
                 }
             }
         ]

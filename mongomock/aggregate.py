@@ -1371,7 +1371,9 @@ def _handle_sort_by_count_stage(in_collection, unused_database, options: Union[s
         )
     field_to_count = options.lstrip("$")
 
-    counter = collections.Counter([doc[field_to_count] for doc in in_collection if field_to_count in doc])
+    counter = collections.Counter(
+        [doc[field_to_count] for doc in in_collection if field_to_count in doc]
+    )
     return [{"_id": key, "count": count} for key, count in counter.most_common()]
 
 
