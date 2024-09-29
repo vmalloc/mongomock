@@ -231,6 +231,7 @@ bugs:
 * Emily Rosengren
 * Eugene Chernyshov
 * Grigoriy Osadchenko
+* `Heisson Willen <https://github.com/heissonwillen/>`_
 * Israel Teixeira
 * Jacob Perkins
 * Jason Burchfield
