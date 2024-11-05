@@ -55,23 +55,56 @@ target-version = "py38"
 line-length = 100
 
 [tool.ruff.lint]
-extend-select = ["A", "B", "C", "C4", "E", "F", "I", "N", "Q", "RUF", "S", "SIM", "T10", "UP", "W", "YTT"]
-extend-fixable = ["RUF100", "I001", "SIM300", "UP008", "UP003", "C403", "UP031", "UP032"]
+extend-select = [
+    "A",
+    "B",
+    "C",
+    "C4",
+    "E",
+    "F",
+    "I",
+    "N",
+    "Q",
+    "RUF",
+    "S",
+    "SIM",
+    "T10",
+    "UP",
+    "W",
+    "YTT",
+]
+extend-fixable = [
+    "RUF100", 
+    "I001", 
+    "SIM300", 
+    "UP008", 
+    "UP003", 
+    "C403", 
+    "UP031", 
+    "UP032",
+]
 extend-ignore = [
     "S101",   # Allow usage of asserts
     "A001",   # Allow shadowing bultins 
+    "A002",   # Allow shadowing bultins 
     "A003",   # Allow shadowing bultins on classes
     "N818",   # Allow exceptions without Error suffix
     "UP006",  # Allow typing.Tuple
     "UP007",  # Allow typing.Union
+    "PYI024", # Allow use of collections.namedtuple
 ]
 exclude = [
     "mongomock/__init__.pyi",
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/test__mongomock.py" = ["N802"]
-"tests/test__gridfs.py" = ["N802"]
+"tests/test__*.py" = [
+    "N802",
+    "PT009",
+    "PT027",
+    "SLF001",
+    "DTZ001",
+]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 40
