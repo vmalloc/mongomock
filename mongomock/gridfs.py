@@ -63,7 +63,7 @@ def enable_gridfs_integration():
         mock.patch("gridfs.synchronous.grid_file.Database", Database).start()
         mock.patch("gridfs.synchronous.grid_file.Collection", Collection).start()
         mock.patch("gridfs.synchronous.grid_file.GridOutCursor", _create_grid_out_cursor).start()
-    except AttributeError:
+    except (AttributeError, ModuleNotFoundError):
         mock.patch("gridfs.Database", Database).start()
         mock.patch("gridfs.grid_file.Collection", Collection).start()
-        mock.patch("gridfs.grid_file.GridOutCursor", _create_grid_out_cursor).start()
+        mock.patch("gridfs.GridOutCursor", _create_grid_out_cursor).start()
