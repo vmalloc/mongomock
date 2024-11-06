@@ -1,8 +1,8 @@
 from unittest import mock
 
 from mongomock import Collection as MongoMockCollection
-from mongomock import Database as MongoMockDatabase
 from mongomock.collection import Cursor as MongoMockCursor
+from mongomock import Database as MongoMockDatabase
 
 try:
     from gridfs.grid_file import GridOut as PyMongoGridOut

@@ -19,8 +19,8 @@ except ImportError:
 
 
 try:
-    import pymongo
     from bson.objectid import ObjectId
+    import pymongo
     from pymongo import MongoClient as PymongoClient
 except ImportError:
     ...
