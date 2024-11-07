@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Remove support for deprecated Python version 3.8
 
+### Fixed
+- The Mongo Python driver did refactor the `gridfs` implementation, so that the patched code had to
+  be adapted.
+
 ## [4.2.0] - 2024-09-11
 ### Changed
 - Switch to [hatch](https://hatch.pypa.io) as build system.
