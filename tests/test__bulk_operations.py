@@ -64,7 +64,7 @@ class BulkOperationsTest(TestCase):
     def __check_number_of_elements(self, count):
         has_count = self.db.collection.count()
         self.assertEqual(
-            has_count, count, 'There is {} documents but there should be {}'.format(has_count, count))
+            has_count, count, f'There is {has_count} documents but there should be {count}')
 
     def test__insert(self):
         self.bulk_op.insert({'a': 1, 'b': 2})
