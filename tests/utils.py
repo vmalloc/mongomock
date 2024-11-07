@@ -1,4 +1,4 @@
-class DBRef(object):
+class DBRef:
 
     def __init__(self, collection, id, database=None):
         self.collection = collection

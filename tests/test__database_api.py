@@ -193,18 +193,18 @@ class DatabaseAPITest(TestCase):
                 self.database.collection_names()
             return
 
-        self.assertEqual(set(self.database.collection_names()), set(['a', 'b']))
+        self.assertEqual(set(self.database.collection_names()), {'a', 'b'})
 
         self.database.c.drop()
-        self.assertEqual(set(self.database.collection_names()), set(['a', 'b']))
+        self.assertEqual(set(self.database.collection_names()), {'a', 'b'})
 
     def test__list_collection_names(self):
         self.database.create_collection('a')
         self.database.create_collection('b')
-        self.assertEqual(set(self.database.list_collection_names()), set(['a', 'b']))
+        self.assertEqual(set(self.database.list_collection_names()), {'a', 'b'})
 
         self.database.c.drop()
-        self.assertEqual(set(self.database.list_collection_names()), set(['a', 'b']))
+        self.assertEqual(set(self.database.list_collection_names()), {'a', 'b'})
 
     def test__list_collections(self):
         self.database.create_collection('a')
@@ -243,7 +243,7 @@ class DatabaseAPITest(TestCase):
         col = self.database.a
         self.assertEqual(set(self.database.list_collection_names()), set())
         col.insert_one({'foo': 'bar'})
-        self.assertEqual(set(self.database.list_collection_names()), set(['a']))
+        self.assertEqual(set(self.database.list_collection_names()), {'a'})
 
     def test__equality(self):
         self.assertEqual(self.database, self.database)

@@ -8,10 +8,10 @@ from mongomock.helpers import RE_TYPE
 _COMPARE_EXCEPTIONS = 'exceptions'
 
 
-class MultiCollection(object):
+class MultiCollection:
 
     def __init__(self, conns):
-        super(MultiCollection, self).__init__()
+        super().__init__()
         self.conns = conns.copy()
         self.do = Foreach(self.conns, compare=False)
         self.compare = Foreach(self.conns, compare=True)
@@ -20,7 +20,7 @@ class MultiCollection(object):
         self.compare_exceptions = Foreach(self.conns, compare=_COMPARE_EXCEPTIONS)
 
 
-class Foreach(object):
+class Foreach:
 
     def __init__(self, objs, compare, ignore_order=False,
                  method_result_decorators=()):
@@ -51,7 +51,7 @@ class Foreach(object):
             self.___decorators + list(decorators))
 
 
-class ForeachMethod(object):
+class ForeachMethod:
 
     def __init__(self, objs, compare, ignore_order, method_name, decorators, sort_by):
         self.___objs = objs
@@ -76,15 +76,15 @@ class ForeachMethod(object):
 
     def __call__(self, *args, **kwargs):
         if self.___compare == _COMPARE_EXCEPTIONS:
-            results = dict(
-                (name, self._get_exception_type(obj, args, kwargs, name=name))
+            results = {
+                name: self._get_exception_type(obj, args, kwargs, name=name)
                 for name, obj in self.___objs.items()
-            )
+            }
         else:
-            results = dict(
-                (name, self._call(obj, args, kwargs))
+            results = {
+                name: self._call(obj, args, kwargs)
                 for name, obj in self.___objs.items()
-            )
+            }
         if self.___compare:
             _assert_no_diff(results, ignore_order=self.___ignore_order, sort_by=self.___sort_by)
         return results

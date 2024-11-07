@@ -390,7 +390,7 @@ class _Parser:
                 return res
 
         assert isinstance(values, (tuple, list)), \
-            "Parameter to {} must evaluate to a list, got '{}'".format(operator, type(values))
+            f"Parameter to {operator} must evaluate to a list, got '{type(values)}'"
 
         parsed_values = list(self.parse_many(values))
         assert parsed_values, '%s must have at least one parameter' % operator
@@ -1449,7 +1449,7 @@ def _combine_projection_spec(filter_list, original_filter, prefix=''):
         filter_dict[field] = filter_dict.get(field, []) + [subkey]
 
     return collections.OrderedDict(
-        (k, _combine_projection_spec(v, original_filter, prefix='{}{}.'.format(prefix, k)))
+        (k, _combine_projection_spec(v, original_filter, prefix=f'{prefix}{k}.'))
         for k, v in filter_dict.items()
     )
 

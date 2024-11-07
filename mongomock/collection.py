@@ -204,7 +204,7 @@ def _combine_projection_spec(projection_fields_spec):
             if not isinstance(tmp_spec.get(base_field), dict):
                 if base_field in tmp_spec:
                     raise OperationFailure(
-                        'Path collision at {} remaining portion {}'.format(f, new_field))
+                        f'Path collision at {f} remaining portion {new_field}')
                 tmp_spec[base_field] = OrderedDict()
             tmp_spec[base_field][new_field] = v
 

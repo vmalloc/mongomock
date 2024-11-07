@@ -55,7 +55,7 @@ class UTCPlus2(tzinfo):
 class CollectionAPITest(TestCase):
 
     def setUp(self):
-        super(CollectionAPITest, self).setUp()
+        super().setUp()
         self.client = mongomock.MongoClient()
         self.db = self.client['somedb']
 
@@ -64,7 +64,7 @@ class CollectionAPITest(TestCase):
         self.assertEqual(self.db.a.b.full_name, 'somedb.a.b')
         self.assertEqual(self.db.a.b.name, 'a.b')
 
-        self.assertEqual(set(self.db.list_collection_names()), set(['a.b']))
+        self.assertEqual(set(self.db.list_collection_names()), {'a.b'})
 
     def test__get_subcollections_by_attribute_underscore(self):
         with self.assertRaises(AttributeError) as err_context:
@@ -110,7 +110,7 @@ class CollectionAPITest(TestCase):
         self.db.drop_collection('b')
         self.db.drop_collection('b')
         self.db.drop_collection(self.db.c)
-        self.assertEqual(set(self.db.list_collection_names()), set(['a']))
+        self.assertEqual(set(self.db.list_collection_names()), {'a'})
 
         col = self.db.a
         r = col.insert_one({'aa': 'bb'}).inserted_id
@@ -181,7 +181,7 @@ class CollectionAPITest(TestCase):
         self.db.collection.insert_many(
             [{'f1': ['v1', 'v2', 'v1']}, {'f1': ['v2', 'v3']}])
         cursor = self.db.collection.find()
-        self.assertEqual(set(cursor.distinct('f1')), set(['v1', 'v2', 'v3']))
+        self.assertEqual(set(cursor.distinct('f1')), {'v1', 'v2', 'v3'})
 
     def test__distinct_array_nested_field(self):
         self.db.collection.insert_one({'f1': [{'f2': 'v'}, {'f2': 'w'}]})
@@ -208,7 +208,7 @@ class CollectionAPITest(TestCase):
         self.db.collection.insert_many(
             [{'f1': 'v1', 'k1': 'v1'}, {'f1': 'v2', 'k1': 'v1'},
              {'f1': 'v3', 'k1': 'v2'}])
-        self.assertEqual(set(self.db.collection.distinct('f1', {'k1': 'v1'})), set(['v1', 'v2']))
+        self.assertEqual(set(self.db.collection.distinct('f1', {'k1': 'v1'})), {'v1', 'v2'})
 
     def test__distinct_error(self):
         with self.assertRaises(TypeError):
@@ -306,7 +306,7 @@ class CollectionAPITest(TestCase):
 
             def __init__(self, collection):
                 self.collection = collection
-                super(Document, self).__init__()
+                super().__init__()
                 self.save()
 
             def save(self):
@@ -1267,7 +1267,7 @@ class CollectionAPITest(TestCase):
         self.db['coll_name'].insert_many([larry_bob, larry, gary])
         ret_val = self.db['coll_name'].find().distinct('name')
         self.assertIsInstance(ret_val, list)
-        self.assertTrue(set(ret_val) == set(['larry', 'gary']))
+        self.assertTrue(set(ret_val) == {'larry', 'gary'})
 
     def test__cursor_limit(self):
         self.db.collection.insert_many([{'a': i} for i in range(100)])
@@ -2379,7 +2379,7 @@ class CollectionAPITest(TestCase):
 
         self.assertEqual('collection', coll.name)
         self.assertEqual(
-            set(['other_name']), set(self.db.list_collection_names()))
+            {'other_name'}, set(self.db.list_collection_names()))
         self.assertNotEqual(coll, self.db.other_name)
         self.assertEqual([], list(coll.find()))
         data_in_db = self.db.other_name.find()
@@ -2401,7 +2401,7 @@ class CollectionAPITest(TestCase):
         coll = self.db.create_collection('a')
         self.db.create_collection('c')
         coll.rename('c', dropTarget=True)
-        self.assertEqual(set(['c']), set(self.db.list_collection_names()))
+        self.assertEqual({'c'}, set(self.db.list_collection_names()))
 
     def test__cursor_rewind(self):
         coll = self.db.create_collection('a')
@@ -4018,11 +4018,11 @@ class CollectionAPITest(TestCase):
             ),
             (
                 {'$switch': {'branches': [{'case': True, 'then': 3}, 7]}},
-                '$switch expected each branch to be an object, found: %s' % type(0),
+                '$switch expected each branch to be an object, found: %s' % int,
             ),
             (
                 {'$switch': {'branches': [7, {}]}},
-                '$switch expected each branch to be an object, found: %s' % type(0),
+                '$switch expected each branch to be an object, found: %s' % int,
             ),
             (
                 {'$switch': {'branches': [{'case': False, 'then': 3}]}},
@@ -4831,7 +4831,7 @@ class CollectionAPITest(TestCase):
                 {'$project': {'size': {'$size': 'arr'}}}
             ])
         self.assertEqual(
-            'The argument to $size must be an array, but was of type: %s' % type('arr'),
+            'The argument to $size must be an array, but was of type: %s' % str,
             str(err.exception))
 
     def test__array_size_argument_array(self):
@@ -7060,8 +7060,8 @@ class CollectionAPITest(TestCase):
             {'_id': 1, 'arr': [0, 2, 4, 6]},
             {'_id': 2, 'arr': [1, 3, 5, 7]}
         ])
-        ids = set(doc['_id'] for doc in self.db.collection.find(
-            {'arr': {'$elemMatch': {'$lt': 10, '$gt': 4}}}, {'_id': 1}))
+        ids = {doc['_id'] for doc in self.db.collection.find(
+            {'arr': {'$elemMatch': {'$lt': 10, '$gt': 4}}}, {'_id': 1})}
         self.assertEqual({1, 2}, ids)
 
     def test_list_collection_names_filter(self):
@@ -7069,7 +7069,7 @@ class CollectionAPITest(TestCase):
         self.db.create_collection('aggregator')
         for day in range(10):
             new_date = now - timedelta(day)
-            self.db.create_collection('historical_{0}'.format(new_date.strftime('%Y_%m_%d')))
+            self.db.create_collection('historical_{}'.format(new_date.strftime('%Y_%m_%d')))
 
         # test without filter
         self.assertEqual(len(self.db.list_collection_names()), 11)
@@ -7080,7 +7080,7 @@ class CollectionAPITest(TestCase):
         })) == 10
 
         new_date = datetime.now() - timedelta(1)
-        col_name = 'historical_{0}'.format(new_date.strftime('%Y_%m_%d'))
+        col_name = 'historical_{}'.format(new_date.strftime('%Y_%m_%d'))
 
         # test not equal
         self.assertEqual(len(self.db.list_collection_names(filter={'name': {'$ne': col_name}})), 10)

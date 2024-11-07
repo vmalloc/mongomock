@@ -35,7 +35,7 @@ class GridFsTest(TestCase):
         mongomock.gridfs.enable_gridfs_integration()
 
     def setUp(self):
-        super(GridFsTest, self).setUp()
+        super().setUp()
         self.fake_conn = mongomock.MongoClient()
         self.mongo_conn = self._connect_to_local_mongodb()
         self.db_name = 'mongomock___testing_db'
@@ -47,7 +47,7 @@ class GridFsTest(TestCase):
         self.fake_gridfs = gridfs.GridFS(self.fake_conn[self.db_name])
 
     def tearDown(self):
-        super(GridFsTest, self).setUp()
+        super().setUp()
         self.mongo_conn.close()
         self.fake_conn.close()
 
@@ -150,7 +150,7 @@ class GridFsTest(TestCase):
         self.assertEqual(real['chunkSize'], fake['chunkSize'])
         self.assertLessEqual(
             abs(real['uploadDate'] - fake['uploadDate']).seconds, max_delta_seconds,
-            msg='real: %s, fake: %s' % (real['uploadDate'], fake['uploadDate']))
+            msg='real: {}, fake: {}'.format(real['uploadDate'], fake['uploadDate']))
 
     def get_mongo_file(self, i):
         return self.mongo_conn[self.db_name]['fs']['files'].find_one({'_id': i})
@@ -174,7 +174,7 @@ class GridFsTest(TestCase):
                     raise
 
 
-class GenFile(object):
+class GenFile:
     def __init__(self, length, value=0, do_encode=True):
         self.gen = self._gen_data(length, value)
         self.do_encode = do_encode
