@@ -6,6 +6,7 @@ import functools
 import itertools
 import json
 import math
+from typing import Any, Union
 from packaging import version
 import time
 import warnings
@@ -24,6 +25,7 @@ try:
     from pymongo.operations import IndexModel
     from pymongo import ReadPreference
     from pymongo import ReturnDocument
+    from pymongo.collation import Collation, validate_collation_or_none
     _READ_PREFERENCE_PRIMARY = ReadPreference.PRIMARY
 except ImportError:
     class IndexModel:
@@ -34,6 +36,14 @@ except ImportError:
         AFTER = True
 
     from mongomock.read_preferences import PRIMARY as _READ_PREFERENCE_PRIMARY
+
+    class Collation(object):
+        pass
+
+    def validate_collation_or_none(
+        value: Union[Mapping[str, Any], Collation, None]
+    ) -> Union[dict[str, Any], None]:
+        return value
 
 from sentinels import NOTHING
 
@@ -2077,9 +2087,18 @@ class Cursor:
     def alive(self):
         return self._emitted != len(self._compute_results(with_limit_and_skip=False))
 
-    @property
-    def collation(self):
-        return self._collation
+    def collation(self, collation: Union[Collation, Mapping[str, Any]]) -> "Cursor":
+        """Adds a :class:`~pymongo.collation.Collation` to this query.
+        
+        Raises :exc:`TypeError` if `collation` is not an instance of
+        :class:`~pymongo.collation.Collation` or a ``dict``. Raises
+        :exc:`~pymongo.errors.InvalidOperation` if this :class:`Cursor` has
+        already been used. Only the last collation applied to this cursor has
+        any effect.
+        :param collation: An instance of :class:`~pymongo.collation.Collation`.
+        """
+        self._collation = validate_collation_or_none(collation)
+        return self
 
     def max_time_ms(self, max_time_ms):
         if max_time_ms is not None and not isinstance(max_time_ms, int):

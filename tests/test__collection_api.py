@@ -26,7 +26,7 @@ try:
     from pymongo import ReturnDocument
     from pymongo.write_concern import WriteConcern
 except ImportError:
-    from mongomock.collection import ReturnDocument
+    from mongomock.collection import ReturnDocument, Collation
     from mongomock import ObjectId
     from mongomock.read_concern import ReadConcern
     from mongomock.write_concern import WriteConcern
@@ -98,10 +98,17 @@ class CollectionAPITest(TestCase):
         next(cursor)
         self.assertFalse(cursor.alive)
 
-    def test__cursor_collation(self):
+    def test__cursor_collation_directly_in_find(self):
         self.db.collection.insert_one({'foo': 'bar'})
-        cursor = self.db.collection.find(collation='fr')
-        self.assertEqual('fr', cursor.collation)
+        cursor = self.db.collection.find(collation=dict(locale="fr"))
+        self.assertEqual('fr', cursor._collation.get("locale"))
+
+    def test__cursor__collation(self):
+        cursor = self.db.collection.find()
+        collation = Collation(locale="en_US", strength=1)
+
+        cursor.collation(collation)
+        self.assertEqual(cursor._collation.get("strength"), 1)
 
     def test__drop_collection(self):
         self.db.create_collection('a')
@@ -486,7 +493,7 @@ class CollectionAPITest(TestCase):
                 self.db.collection.count_documents({}, **error_kwarg)
 
         with self.assertRaises(NotImplementedError):
-            self.db.collection.count_documents({}, collation='fr')
+            self.db.collection.count_documents({}, collation=dict(locale="fr"))
 
         with self.assertRaises(mongomock.OperationFailure):
             self.db.collection.count_documents('unique')
