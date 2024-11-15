@@ -92,14 +92,14 @@ def validate_list_or_mapping(option, value):
                         'collections.Mapping' % (option,))
 
 
-def _bson_encode(document, codec_options):
+def _bson_encode(document, check_keys, codec_options):
     if CodecOptions:
         if isinstance(codec_options, mongomock_codec_options.CodecOptions):
             codec_options = codec_options.to_pymongo()
         if isinstance(codec_options, CodecOptions):
-            BSON.encode(document, check_keys=True, codec_options=codec_options)
+            BSON.encode(document, check_keys=check_keys, codec_options=codec_options)
     else:
-        BSON.encode(document, check_keys=True)
+        BSON.encode(document, check_keys=check_keys)
 
 
 def validate_is_mapping(option, value):
@@ -561,7 +561,7 @@ class Collection:
             if not check_keys:
                 _validate_data_fields(data)
 
-            BSON.encode(data, check_keys=check_keys, codec_options=self._codec_options)
+            _bson_encode(data, check_keys=check_keys, codec_options=self._codec_options)
 
         # Like pymongo, we should fill the _id in the inserted dict (odd behavior,
         # but we need to stick to it), so we must patch in-place the data dict
@@ -994,7 +994,7 @@ class Collection:
                         check_keys = helpers.PYMONGO_VERSION < version.parse('3.6')
                         if not check_keys:
                             _validate_data_fields(document)
-                        BSON.encode(document, check_keys=check_keys, codec_options=self.codec_options)
+                        _bson_encode(document, check_keys=check_keys, codec_options=self.codec_options)
                     existing_document.update(self._internalize_dict(document))
                     if existing_document['_id'] != _id:
                         raise OperationFailure(
@@ -2117,7 +2117,7 @@ def _set_updater(doc, field_name, value, codec_options=None):
                     f'Field name cannot contain the null character and top-level field name '
                     f'cannot start with "$" (found: {field_name})'
                 )
-        BSON.encode({field_name: value}, check_keys=check_keys, codec_options=codec_options)
+        _bson_encode({field_name: value}, check_keys=check_keys, codec_options=codec_options)
     if isinstance(doc, dict):
         doc[field_name] = value
     if isinstance(doc, list):
