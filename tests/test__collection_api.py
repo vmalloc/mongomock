@@ -8,22 +8,12 @@ import re
 import sys
 from tests.diff import diff
 import time
-from unittest import TestCase, skipIf, skipUnless
+from unittest import TestCase, skipIf, skipUnless, mock
 import uuid
 import warnings
 
 import mongomock
 from mongomock import helpers
-
-try:
-    from unittest import mock
-    _HAVE_MOCK = True
-except ImportError:
-    try:
-        import mock
-        _HAVE_MOCK = True
-    except ImportError:
-        _HAVE_MOCK = False
 
 try:
     from bson import codec_options
@@ -635,6 +625,30 @@ class CollectionAPITest(TestCase):
         doc.pop('_id')
         self.assertDictEqual(doc, replacement)
 
+    def test__find_one_sorting(self):
+        documents = [
+            {'x': 1, 's': 0},
+            {'x': 1, 's': 1},
+            {'x': 4, 's': 1},
+            {'x': 1, 's': 2},
+            {'x': 1, 's': 3},
+            {'x': 9, 's': 1}
+        ]
+        self.db.collection.insert_many(documents)
+        self.assert_documents(documents, ignore_ids=False)
+
+        doc = self.db.collection.find_one(
+            {'x': 1}, sort={'s': -1}
+        )
+
+        self.assertDictEqual(doc, documents[-2])
+
+        doc = self.db.collection.find_one(
+            {'x': 1}, sort={'s': 1}
+        )
+
+        self.assertDictEqual(doc, documents[0])
+
     def test__find_one_and_update(self):
         documents = [
             {'x': 1, 's': 0},
@@ -890,6 +904,113 @@ class CollectionAPITest(TestCase):
                 filter={'a': 1},
                 update={'$set': {'a': 1}},
                 hint='a',
+            )
+
+    def test__update_pipeline(self):
+        collection = self.db.collection
+        collection.insert_many([
+            {'_id': 1, 'a': 1, 'b': 2},
+            {'_id': 2, 'a': 1, 'b': 2},
+            {'_id': 3, 'a': 1, 'b': 2},
+            {'_id': 4, 'a': 1, 'b': 2},
+        ])
+        # TODO(guludo): add test cases for other stages when they become
+        # supported in Mongomock:
+        # - $unset: https://github.com/mongomock/mongomock/issues/740
+        # - $replaceWith: https://github.com/mongomock/mongomock/issues/741
+        data = (
+            (
+                1,
+                [{'$set': {'c': {'$add': ['$a', '$b']}}}],
+                {'_id': 1, 'a': 1, 'b': 2, 'c': 3},
+            ),
+            (
+                2,
+                [{'$addFields': {'c': {'$add': ['$a', '$b']}}}],
+                {'_id': 2, 'a': 1, 'b': 2, 'c': 3},
+            ),
+            (
+                3,
+                [{'$project': {'a': 0}}],
+                {'_id': 3, 'b': 2},
+            ),
+            (
+                4,
+                [{'$replaceRoot': {'newRoot': {
+                    '_id': '$_id',
+                    'x': {'$add': ['$a', '$b']}
+                }}}],
+                {'_id': 4, 'x': 3},
+            ),
+        )
+        for doc_id, update, expected in data:
+            update_result = collection.update_one(
+                filter={'_id': doc_id},
+                update=update,
+            )
+            self.assertEqual(update_result.modified_count, 1)
+            self.assertEqual(update_result.matched_count, 1)
+            self.assert_document_stored(doc_id, expected)
+
+    def test__update_pipeline_upsert(self):
+        collection = self.db.collection
+        collection.insert_one({'_id': 1, 'a': 1, 'b': 2})
+
+        update_result = collection.update_one(
+            filter={'a': 99, 'b': 100},
+            update=[{'$set': {'a': {'$add': ['$a', 10]}}}],
+            upsert=True,
+        )
+        expected = {
+            '_id': update_result.upserted_id,
+            'a': 109,
+            'b': 100,
+        }
+        self.assertEqual(update_result.matched_count, 0)
+        self.assert_document_stored(update_result.upserted_id, expected)
+
+    def test__update_pipeline_upsert__invalid_stage_name(self):
+        collection = self.db.collection
+        collection.insert_one({'_id': 1, 'a': 1, 'b': 2})
+        with self.assertRaises(mongomock.OperationFailure) as cm:
+            collection.update_one(
+                filter={'a': 99, 'b': 100},
+                update=[{'$set': {'a': {'$invalidStageName': ['$a', 10]}}}],
+                upsert=True,
+            )
+            self.assertIn("Unrecognized pipeline stage name: 'invalidStageName'", str(cm.exception))
+
+    def test__update_pipeline_invalid_stages(self):
+        collection = self.db.collection
+        data = (
+            (
+                [{'$unwind': '$a'}],
+                '$unwind is not allowed to be used within an update',
+            ),
+            (
+                [{'$count': 'foo'}],
+                '$count is not allowed to be used within an update',
+            ),
+        )
+        for pipeline, msg in data:
+            with self.assertRaises(mongomock.OperationFailure) as cm:
+                collection.update_one(
+                    filter={},
+                    update=pipeline,
+                )
+            self.assertIn(msg, str(cm.exception))
+
+    def test__update_pipeline_not_mapping_nor_list(self):
+        collection = self.db.collection
+        with self.assertRaises(TypeError) as cm:
+            collection.update_one(
+                filter={},
+                update="not_mapping_nor_list",
+            )
+            self.assertIn(
+                ("update must either be a list or an instance of dict, "
+                 "bson.son.SON, or any other type that inherits from collections.Mapping"),
+                str(cm.exception),
             )
 
     def test__update_many(self):
@@ -1487,7 +1608,6 @@ class CollectionAPITest(TestCase):
         self.db.collection.insert_one({'value': ['a', 'b', 'c', 1, 2, 3]})
         self.assertEqual(self.db.collection.count_documents({}), 1)
 
-    @skipIf(not _HAVE_MOCK, 'mock not installed')
     def test__ttl_expiry_with_mock(self):
         now = datetime.utcnow()
         self.db.collection.create_index([('value', 1)], expireAfterSeconds=100)
@@ -5169,7 +5289,26 @@ class CollectionAPITest(TestCase):
         collection = self.db.collection
         with self.assertRaises(InvalidDocument) as cm:
             collection.insert_one({'$foo': 'bar'})
-        self.assertEqual(str(cm.exception), "key '$foo' must not start with '$'")
+        self.assertEqual(str(cm.exception), 'Top-level field names cannot start with the "$"'
+                                            ' sign (found: $foo)')
+        with self.assertRaises(InvalidDocument):
+            collection.insert_one({'foo': {'foo\0bar': 'bar'}})
+
+    @skipIf(not helpers.HAVE_PYMONGO, 'pymongo not installed')
+    def test_update_bson_invalid_encode_type(self):
+        self.db.collection.insert_one({'a': 1})
+        with self.assertRaises(InvalidDocument):
+            self.db.collection.update_one(filter={'a': 1}, update={'$set': {'$a': 2}})
+
+    @skipIf(helpers.PYMONGO_VERSION >= version.parse('3.6'),
+            'pymongo has less strict naming requirements after v3.6')
+    @skipIf(not helpers.HAVE_PYMONGO, 'pymongo not installed')
+    def test_insert_bson_special_characters(self):
+        collection = self.db.collection
+        collection.insert_one({'foo.bar.zoo': {'foo.bar': '$zoo'}, 'foo.$bar': 'zoo'})
+        actual = self.db.collection.find_one()
+        assert actual['foo.bar.zoo'] == {'foo.bar': '$zoo'}
+        assert actual['foo.$bar'] == 'zoo'
 
     @skipIf(not helpers.HAVE_PYMONGO, 'pymongo not installed')
     def test__update_invalid_encode_type(self):

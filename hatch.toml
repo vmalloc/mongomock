@@ -1,0 +1,48 @@
+[envs.test]
+features = ["pyexecjs"]
+
+[envs.test.env-vars]
+EXECJS_RUNTIME = "node"
+
+[envs.hatch-test.overrides]
+matrix.pymongo.extra-dependencies = [
+  { value = "pymongo<4.0", if = ["3"]},
+  { value = "pymongo<5.0", if = ["4"]},
+]
+
+[[envs.hatch-test.matrix]]
+python = ["3.8", "3.9", "3.10", "3.11", "3.12", "pypy3"]
+pymongo = ["3", "4", "none"]
+
+[envs.cov]
+dependencies = [
+  "coverage[toml]==7.5.*",
+]
+
+[envs.cov.scripts]
+collect = [
+  "- coverage combine",
+  "coverage xml",
+  "coverage report",
+]
+
+[envs.lint]
+dependencies = [
+  "pylint==3.0.*",
+  "mypy==1.10.*",
+  "hacking==6.1.0",
+]
+
+[envs.lint.scripts]
+style = [
+  "pylint mongomock tests {args}",
+  "flake8 {args}",
+]
+typing = "mypy --install-types --non-interactive tests/types"
+
+[envs.docs]
+extra-dependencies = [
+  "doc8==1.1.*",
+  "pygments==2.16.*",
+]
+scripts = { check = "doc8 README.rst" }
