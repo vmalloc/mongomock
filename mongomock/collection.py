@@ -2130,12 +2130,12 @@ def _set_updater(doc, field_name, value, codec_options=None):
         doc[field_index] = value
 
 
-def _unset_updater(doc, field_name, value):
+def _unset_updater(doc, field_name, value, codec_options=None):
     if isinstance(doc, dict):
         doc.pop(field_name, None)
 
 
-def _inc_updater(doc, field_name, value):
+def _inc_updater(doc, field_name, value, codec_options=None):
     if isinstance(doc, dict):
         doc[field_name] = doc.get(field_name, 0) + value
 
@@ -2151,17 +2151,17 @@ def _inc_updater(doc, field_name, value):
             doc[field_index] = value
 
 
-def _max_updater(doc, field_name, value):
+def _max_updater(doc, field_name, value, codec_options=None):
     if isinstance(doc, dict):
         doc[field_name] = max(doc.get(field_name, value), value)
 
 
-def _min_updater(doc, field_name, value):
+def _min_updater(doc, field_name, value, codec_options=None):
     if isinstance(doc, dict):
         doc[field_name] = min(doc.get(field_name, value), value)
 
 
-def _pop_updater(doc, field_name, value):
+def _pop_updater(doc, field_name, value, codec_options=None):
     if value not in {1, -1}:
         raise WriteError('$pop expects 1 or -1, found: ' + str(value))
 
@@ -2181,7 +2181,7 @@ def _pop_updater(doc, field_name, value):
         _pop_from_list(doc[field_index], value)
 
 
-def _pop_from_list(list_instance, mongo_pop_value):
+def _pop_from_list(list_instance, mongo_pop_value, codec_options=None):
     if not list_instance:
         return
 
@@ -2191,7 +2191,7 @@ def _pop_from_list(list_instance, mongo_pop_value):
         list_instance.pop(0)
 
 
-def _current_date_updater(doc, field_name, value):
+def _current_date_updater(doc, field_name, value, codec_options=None):
     if isinstance(doc, dict):
         if value == {'$type': 'timestamp'}:
             # TODO(juannyg): get_current_timestamp should also be using helpers utcnow,
