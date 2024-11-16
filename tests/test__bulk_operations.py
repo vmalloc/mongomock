@@ -48,14 +48,14 @@ class BulkOperationsTest(TestCase):
             if self.test_with_pymongo and key == 'nModified' and has_val is None:
                 # ops, real pymongo did not returned 'nModified' key!
                 continue
-            self.assertFalse(has_val is None, "Missed key '{}' in result: {}".format(key, result))
+            self.assertFalse(has_val is None, f"Missed key '{key}' in result: {result}")
             if exp_val:
                 self.assertEqual(
                     exp_val, has_val, 'Invalid result {}={} (but expected value={})'.format(
                         key, has_val, exp_val))
             else:
                 self.assertFalse(
-                    bool(has_val), 'Received unexpected value {} = {}'.format(key, has_val))
+                    bool(has_val), f'Received unexpected value {key} = {has_val}')
 
     def __execute_and_check_result(self, write_concern=None, **expecting_result):
         result = self.bulk_op.execute(write_concern=write_concern)
