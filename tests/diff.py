@@ -11,7 +11,7 @@ except ImportError:
     _HAVE_PYMONGO = False
 
 
-class _NO_VALUE(object):
+class _NO_VALUE:
     pass
 
 
@@ -65,10 +65,10 @@ def diff(a, b, path=None):
         return [(path[:], a, b)]
     if not isinstance(a, _SUPPORTED_TYPES):
         raise NotImplementedError(
-            'Unsupported diff type: {0}'.format(type(a)))  # pragma: no cover
+            f'Unsupported diff type: {type(a)}')  # pragma: no cover
     if not isinstance(b, _SUPPORTED_TYPES):
         raise NotImplementedError(
-            'Unsupported diff type: {0}'.format(type(b)))  # pragma: no cover
+            f'Unsupported diff type: {type(b)}')  # pragma: no cover
     if a != b:
         return [(path[:], a, b)]
     return []

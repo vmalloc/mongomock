@@ -107,7 +107,7 @@ def create_uri_spec_tests():
                 scenario_def = json.load(scenario_stream)
             # Construct test from scenario.
             new_test = create_uri_spec_test(scenario_def)
-            test_name = 'test_%s_%s' % (
+            test_name = 'test_{}_{}'.format(
                 dirname, os.path.splitext(filename)[0])
             new_test.__name__ = test_name
             setattr(TestAllUriScenarios, new_test.__name__, new_test)
