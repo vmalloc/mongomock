@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from collections import OrderedDict
 import copy
 import datetime
@@ -87,7 +86,7 @@ class InterfaceTest(TestCase):
 class DatabaseGettingTest(TestCase):
 
     def setUp(self):
-        super(DatabaseGettingTest, self).setUp()
+        super().setUp()
         self.client = mongomock.MongoClient()
 
     @skipIf(not helpers.HAVE_PYMONGO, 'pymongo not installed')
@@ -270,7 +269,7 @@ class _CollectionComparisonTest(TestCase):
     """
 
     def setUp(self):
-        super(_CollectionComparisonTest, self).setUp()
+        super().setUp()
         self.fake_conn = mongomock.MongoClient()
         self.mongo_conn = self._connect_to_local_mongodb()
         self.db_name = 'mongomock___testing_db'
@@ -309,7 +308,7 @@ class _CollectionComparisonTest(TestCase):
                     raise
 
     def tearDown(self):
-        super(_CollectionComparisonTest, self).tearDown()
+        super().tearDown()
         self.mongo_conn.close()
 
 
@@ -2385,7 +2384,7 @@ class GroupTest(_CollectionComparisonTest):
 class MongoClientAggregateTest(_CollectionComparisonTest):
 
     def setUp(self):
-        super(MongoClientAggregateTest, self).setUp()
+        super().setUp()
         self.data = [
             {'_id': ObjectId(), 'a': 1, 'b': 1, 'count': 4, 'swallows': ['European swallow'],
              'date': datetime.datetime(2015, 10, 1, 10, 0)},
@@ -2789,12 +2788,12 @@ class MongoClientAggregateTest(_CollectionComparisonTest):
         expected = list(aggregations['real'])
         result = list(aggregations['fake'])
         self.assertEqual(len(result), len(expected))
-        set_expected = set([
+        set_expected = {
             tuple(sorted(e.items())) for elt in expected for e in elt['set']
-        ])
-        set_result = set([
+        }
+        set_result = {
             tuple(sorted(e.items())) for elt in result for e in elt['set']
-        ])
+        }
         self.assertEqual(set_result, set_expected)
 
     def test__aggregate_add_to_set_missing_value(self):
@@ -2878,7 +2877,7 @@ class MongoClientAggregateTest(_CollectionComparisonTest):
             {'_id': 3, 'description': 'Many spaces before     line'},
             {'_id': 4, 'description': 'Multiple\nline descriptions'},
             {'_id': 5, 'description': 'anchors, links and hyperlinks'},
-            {'_id': 6, 'description': u'métier work vocation'}
+            {'_id': 6, 'description': 'métier work vocation'}
         ])
         self.cmp.compare.aggregate([{'$addFields': {
             'result': {'$regexMatch': {'input': '$description', 'regex': 'line'}},
@@ -4281,7 +4280,7 @@ class MongoClientAggregateTest(_CollectionComparisonTest):
 class MongoClientGraphLookupTest(_CollectionComparisonTest):
 
     def setUp(self):
-        super(MongoClientGraphLookupTest, self).setUp()
+        super().setUp()
         self.cmp_a = self._create_compare_for_collection('data_a')
         self.cmp_b = self._create_compare_for_collection('data_b')
 
@@ -4469,7 +4468,7 @@ def _SKIP(*args):
 class MongoClientSortSkipLimitTest(_CollectionComparisonTest):
 
     def setUp(self):
-        super(MongoClientSortSkipLimitTest, self).setUp()
+        super().setUp()
         self.cmp.do.insert_many([{'_id': i, 'index': i} for i in range(30)])
 
     def test__skip(self):
@@ -4597,7 +4596,7 @@ class MongoClientSortSkipLimitTest(_CollectionComparisonTest):
 class InsertedDocumentTest(TestCase):
 
     def setUp(self):
-        super(InsertedDocumentTest, self).setUp()
+        super().setUp()
         self.collection = mongomock.MongoClient().db.collection
         self.data = {'a': 1, 'b': [1, 2, 3], 'c': {'d': 4}}
         self.orig_data = copy.deepcopy(self.data)
@@ -4656,7 +4655,7 @@ class MongoClientTest(_CollectionComparisonTest):
     """
 
     def setUp(self):
-        super(MongoClientTest, self).setUp()
+        super().setUp()
         self.cmp = MultiCollection({'fake': self.fake_conn, 'real': self.mongo_conn})
 
     def test__database_names(self):
@@ -4674,7 +4673,7 @@ class DatabaseTest(_CollectionComparisonTest):
     """
 
     def setUp(self):
-        super(DatabaseTest, self).setUp()
+        super().setUp()
         self.cmp = MultiCollection({
             'fake': self.fake_conn[self.db_name],
             'real': self.mongo_conn[self.db_name],

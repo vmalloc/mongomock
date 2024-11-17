@@ -21,7 +21,7 @@ class BulkOperationsTest(TestCase):
     test_with_pymongo = False
 
     def setUp(self):
-        super(BulkOperationsTest, self).setUp()
+        super().setUp()
         if self.test_with_pymongo:
             self.client = pymongo.MongoClient(host=os.environ.get('TEST_MONGO_HOST', 'localhost'))
         else:
@@ -48,14 +48,14 @@ class BulkOperationsTest(TestCase):
             if self.test_with_pymongo and key == 'nModified' and has_val is None:
                 # ops, real pymongo did not returned 'nModified' key!
                 continue
-            self.assertFalse(has_val is None, "Missed key '%s' in result: %s" % (key, result))
+            self.assertFalse(has_val is None, f"Missed key '{key}' in result: {result}")
             if exp_val:
                 self.assertEqual(
-                    exp_val, has_val, 'Invalid result %s=%s (but expected value=%s)' % (
+                    exp_val, has_val, 'Invalid result {}={} (but expected value={})'.format(
                         key, has_val, exp_val))
             else:
                 self.assertFalse(
-                    bool(has_val), 'Received unexpected value %s = %s' % (key, has_val))
+                    bool(has_val), f'Received unexpected value {key} = {has_val}')
 
     def __execute_and_check_result(self, write_concern=None, **expecting_result):
         result = self.bulk_op.execute(write_concern=write_concern)
@@ -64,7 +64,7 @@ class BulkOperationsTest(TestCase):
     def __check_number_of_elements(self, count):
         has_count = self.db.collection.count()
         self.assertEqual(
-            has_count, count, 'There is %s documents but there should be %s' % (has_count, count))
+            has_count, count, f'There is {has_count} documents but there should be {count}')
 
     def test__insert(self):
         self.bulk_op.insert({'a': 1, 'b': 2})
@@ -188,7 +188,7 @@ class BulkOperationsWithPymongoTest(BulkOperationsTest):
 class CollectionComparisonTest(TestCase):
 
     def setUp(self):
-        super(CollectionComparisonTest, self).setUp()
+        super().setUp()
         self.fake_conn = mongomock.MongoClient()
         self.mongo_conn = pymongo.MongoClient(host=os.environ.get('TEST_MONGO_HOST', 'localhost'))
         self.db_name = 'mongomock___testing_db'

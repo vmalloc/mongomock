@@ -8,7 +8,7 @@ try:
     _HAVE_MOCK = True
 except ImportError:
     try:
-        import mock
+        from unittest import mock
         _HAVE_MOCK = True
     except ImportError:
         _HAVE_MOCK = False
