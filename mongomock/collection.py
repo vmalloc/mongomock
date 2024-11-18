@@ -484,7 +484,7 @@ class Collection:
     def __getattr__(self, attr):
         if attr.startswith('_'):
             raise AttributeError(
-                f"{self.__call__.__name__} has no attribute '{attr}'. "
+                f"{self.__class__.__name__} has no attribute '{attr}'. "
                 f"To access the {self.name}.{attr} collection, use database['{self.name}.{attr}']."
             )
         return self.__getitem__(attr)
@@ -1415,7 +1415,7 @@ class Collection:
             doc_copy = _project_by_spec(
                 doc,
                 _combine_projection_spec(fields),
-                is_include=next(list(fields.values())),
+                is_include=next(iter(fields.values())),
                 container=container,
             )
 
@@ -1787,26 +1787,26 @@ class Collection:
         def ensure_index(self, key_or_list, cache_for=300, **kwargs):
             return self.create_index(key_or_list, cache_for, **kwargs)
 
-    def create_index(self, key_or_list, cache_for=300, session=None, **kwargs):
+    def create_index(self, keys, cache_for=300, session=None, **kwargs):
         if session:
             raise_not_implemented('session', 'Mongomock does not handle sessions yet')
-        index_list = helpers.create_index_list(key_or_list)
+        index_list = helpers.create_index_list(keys)
         is_unique = kwargs.pop('unique', False)
         is_sparse = kwargs.pop('sparse', False)
 
         index_name = kwargs.pop('name', helpers.gen_index_name(index_list))
-        index_dict = {'key': index_list}
+        config = {'key': index_list}
         if is_sparse:
-            index_dict['sparse'] = True
+            config['sparse'] = True
         if is_unique:
-            index_dict['unique'] = True
+            config['unique'] = True
         if 'expireAfterSeconds' in kwargs and kwargs['expireAfterSeconds'] is not None:
-            index_dict['expireAfterSeconds'] = kwargs.pop('expireAfterSeconds')
+            config['expireAfterSeconds'] = kwargs.pop('expireAfterSeconds')
         if 'partialFilterExpression' in kwargs and kwargs['partialFilterExpression'] is not None:
-            index_dict['partialFilterExpression'] = kwargs.pop('partialFilterExpression')
+            config['partialFilterExpression'] = kwargs.pop('partialFilterExpression')
 
         existing_index = self._store.indexes.get(index_name)
-        if existing_index and index_dict != existing_index:
+        if existing_index and config != existing_index:
             raise OperationFailure(
                 f'Index with name: {index_name} already exists with different options'
             )
@@ -1843,7 +1843,7 @@ class Collection:
                         )
                     indexed_list.append(index)
 
-        self._store.create_index(index_name, index_dict)
+        self._store.create_index(index_name, config)
 
         return index_name
 

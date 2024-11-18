@@ -1552,7 +1552,7 @@ def _handle_project_stage(in_collection, unused_database, options):
             new_fields_collection = [{} for unused_doc in in_collection]
 
         for in_doc, out_doc in zip(in_collection, new_fields_collection):
-            with contextlib.supress(KeyError):
+            with contextlib.suppress(KeyError):
                 out_doc[field] = _parse_expression(value, in_doc, ignore_missing_keys=True)
     if (method == 'include') == (include_id is not False and include_id != 0):
         filter_list.append('_id')

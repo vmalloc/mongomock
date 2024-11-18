@@ -53,7 +53,7 @@ class CodecOptions(collections.namedtuple('CodecOptions', _FIELDS)):
         type_registry=_DEFAULT_TYPE_REGISTRY,
         datetime_conversion=_DEFAULT_DATETIME_CONVERSION,
     ):
-        if not isinstance(document_class, dict):
+        if document_class is not dict:
             raise NotImplementedError(
                 f'Mongomock does not implement custom document_class yet: {document_class!r}'
             )

@@ -24,7 +24,10 @@ try:
     import pymongo
     from bson import DBRef
     from bson import decimal128
+    from bson.code import Code
     from bson.objectid import ObjectId
+    from bson.regex import Regex
+    from bson.son import SON
     from pymongo import MongoClient as PymongoClient
     from pymongo import read_concern
     from pymongo.read_preferences import ReadPreference
@@ -32,11 +35,9 @@ except ImportError:
     from mongomock import read_concern
     from mongomock.object_id import ObjectId
     from tests.utils import DBRef
+
 try:
-    import execjs  # pylint: disable=unused-import
-    from bson.code import Code
-    from bson.regex import Regex
-    from bson.son import SON
+    import execjs
 
     _HAVE_MAP_REDUCE = any(r.is_available() for r in execjs.runtimes().values())
 except ImportError:

@@ -1,8 +1,9 @@
 import re
 import time
 import warnings
-from collections import abc
 from collections import OrderedDict
+from collections.abc import Iterable
+from collections.abc import Mapping
 from datetime import datetime
 from datetime import timedelta
 from datetime import tzinfo
@@ -90,22 +91,31 @@ def print_deprecation_warning(old_param_name, new_param_name):
     )
 
 
-def create_index_list(key_or_list, direction=None):
+def create_index_list(
+    keys: str | Iterable[str, tuple[str, int]], direction: int | None = None
+) -> list[tuple[str, int]]:
     """Helper to generate a list of (key, direction) pairs.
 
     It takes such a list, or a single key, or a single key and direction.
     """
-    if isinstance(key_or_list, str):
-        return [(key_or_list, direction or ASCENDING)]
-    if not isinstance(key_or_list, (list, tuple, abc.Iterable)):
-        raise TypeError('if no direction is specified, ' 'key_or_list must be an instance of list')
-    return key_or_list
+
+    def make_key(spec: str | tuple[str, int]) -> tuple[str, int]:
+        if isinstance(spec, tuple):
+            if len(spec) != 2:
+                raise TypeError('index spec has to be a tuple (key, direction)')
+            return spec
+        return spec, direction or ASCENDING
+
+    if isinstance(keys, str):
+        return [make_key(keys)]
+    if not isinstance(keys, Iterable) or isinstance(keys, Mapping):
+        raise TypeError('keys has to be a str or a list')
+    return [make_key(item) for item in keys]
 
 
-def gen_index_name(index_list):
+def gen_index_name(keys: list[tuple[str, int]]) -> str:
     """Generate an index name based on the list of keys with directions."""
-
-    return '_'.join([f'{item}_{item}' for item in index_list])
+    return '_'.join(f'{key}_{direction}' for key, direction in keys)
 
 
 class hashdict(dict):  # noqa: N801
