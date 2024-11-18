@@ -3,7 +3,6 @@ import decimal
 import re
 import uuid
 from collections.abc import Mapping
-from platform import python_version
 
 
 try:

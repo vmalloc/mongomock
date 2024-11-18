@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 import time
 import warnings
@@ -7,6 +9,7 @@ from collections.abc import Mapping
 from datetime import datetime
 from datetime import timedelta
 from datetime import tzinfo
+from typing import Optional
 from urllib.parse import unquote_plus
 
 from packaging import version
@@ -92,7 +95,7 @@ def print_deprecation_warning(old_param_name, new_param_name):
 
 
 def create_index_list(
-    keys: str | Iterable[str, tuple[str, int]], direction: int | None = None
+    keys: str | Iterable[str, tuple[str, int]], direction: Optional[int] = None
 ) -> list[tuple[str, int]]:
     """Helper to generate a list of (key, direction) pairs.
 
