@@ -6,6 +6,7 @@ from packaging import version
 
 from mongomock import helpers
 
+
 try:
     from bson import codec_options
 except ImportError:
@@ -17,47 +18,45 @@ class TypeRegistry:
 
 
 _FIELDS = (
-    "document_class",
-    "tz_aware",
-    "uuid_representation",
-    "unicode_decode_error_handler",
-    "tzinfo",
+    'document_class',
+    'tz_aware',
+    'uuid_representation',
+    'unicode_decode_error_handler',
+    'tzinfo',
 )
 
-if codec_options and helpers.PYMONGO_VERSION >= version.parse("3.8"):
+if codec_options and version.parse('3.8') <= helpers.PYMONGO_VERSION:
     _DEFAULT_TYPE_REGISTRY = codec_options.TypeRegistry()
-    _FIELDS += ("type_registry",)
+    _FIELDS += ('type_registry',)
 else:
     _DEFAULT_TYPE_REGISTRY = TypeRegistry()
 
-if codec_options and helpers.PYMONGO_VERSION >= version.parse("4.3"):
+if codec_options and version.parse('4.3') <= helpers.PYMONGO_VERSION:
     _DEFAULT_DATETIME_CONVERSION = codec_options.DatetimeConversion.DATETIME
-    _FIELDS += ("datetime_conversion",)
+    _FIELDS += ('datetime_conversion',)
 else:
     _DEFAULT_DATETIME_CONVERSION = 1
 
 # New default in Pymongo v4:
 # https://pymongo.readthedocs.io/en/stable/examples/uuid.html#unspecified
-if helpers.PYMONGO_VERSION >= version.parse("4.0"):
-    _DEFAULT_UUID_REPRESENTATION = 0
-else:
-    _DEFAULT_UUID_REPRESENTATION = 3
+_DEFAULT_UUID_REPRESENTATION = 0 if version.parse('4.0') <= helpers.PYMONGO_VERSION else 3
 
 
-class CodecOptions(collections.namedtuple("CodecOptions", _FIELDS)):
+class CodecOptions(collections.namedtuple('CodecOptions', _FIELDS)):
     def __new__(
         cls,
         document_class=dict,
         tz_aware=False,
         uuid_representation=_DEFAULT_UUID_REPRESENTATION,
-        unicode_decode_error_handler="strict",
+        unicode_decode_error_handler='strict',
         tzinfo=None,
         type_registry=_DEFAULT_TYPE_REGISTRY,
         datetime_conversion=_DEFAULT_DATETIME_CONVERSION,
     ):
-        if document_class != dict:
+        if document_class is not dict:
             raise NotImplementedError(
-                'Mongomock does not implement custom document_class yet: %r' % document_class)
+                f'Mongomock does not implement custom document_class yet: {document_class!r}'
+            )
 
         if not isinstance(tz_aware, bool):
             raise TypeError('tz_aware must be True or False')
@@ -67,10 +66,11 @@ class CodecOptions(collections.namedtuple("CodecOptions", _FIELDS)):
 
         if unicode_decode_error_handler not in ('strict', None):
             raise NotImplementedError(
-                'Mongomock does not handle custom unicode_decode_error_handler yet')
+                'Mongomock does not handle custom unicode_decode_error_handler yet'
+            )
 
         if tzinfo is not None:
-            raise NotImplementedError("Mongomock does not handle custom tzinfo yet")
+            raise NotImplementedError('Mongomock does not handle custom tzinfo yet')
 
         values = (
             document_class,
@@ -80,21 +80,20 @@ class CodecOptions(collections.namedtuple("CodecOptions", _FIELDS)):
             tzinfo,
         )
 
-        if "type_registry" in _FIELDS:
+        if 'type_registry' in _FIELDS:
             type_registry = type_registry or _DEFAULT_TYPE_REGISTRY
             if type_registry != _DEFAULT_TYPE_REGISTRY:
                 raise NotImplementedError(
-                    "Mongomock does not handle custom type_registry yet %r"
-                    % type_registry
+                    f'Mongomock does not handle custom type_registry yet {type_registry!r}'
                 )
             values += (type_registry,)
 
-        if "datetime_conversion" in _FIELDS:
+        if 'datetime_conversion' in _FIELDS:
             datetime_conversion = datetime_conversion or _DEFAULT_DATETIME_CONVERSION
             if datetime_conversion != _DEFAULT_DATETIME_CONVERSION:
                 raise NotImplementedError(
-                    f"Mongomock does not handle custom datetime_conversion "
-                    f"yet {datetime_conversion}"
+                    f'Mongomock does not handle custom datetime_conversion '
+                    f'yet {datetime_conversion}'
                 )
             values += (datetime_conversion,)
 
@@ -107,7 +106,6 @@ class CodecOptions(collections.namedtuple("CodecOptions", _FIELDS)):
 
 
 def is_supported(custom_codec_options):
-
     if not custom_codec_options:
         return None
 

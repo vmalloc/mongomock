@@ -3,7 +3,6 @@ import uuid
 
 class ObjectId:
     def __init__(self, id=None):
-        super().__init__()
         if id is None:
             self._id = uuid.uuid1()
         else:

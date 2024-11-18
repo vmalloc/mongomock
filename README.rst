@@ -107,7 +107,7 @@ so feel free to open issues and/or pull requests and help the project out!
 
 **NOTE**: We don't include pymongo functionality as "stubs" or "placeholders". Since this library is
 used to validate production code, it is unacceptable to behave differently than the real pymongo
-implementation. In such cases it is better to throw `NotImplementedError` than implement a modified
+implementation. In such cases it is better to throw ``NotImplementedError`` than implement a modified
 version of the original behavior.
 
 Upgrading to Pymongo v4
@@ -129,7 +129,8 @@ When submitting a PR, please make sure that:
 1. You include tests for the feature you are adding or bug you are fixing. Preferably, the test
    should compare against the real MongoDB engine (see `examples in tests`_ for reference).
 2. No existing test got deleted or unintentionally castrated
-3. The build passes on your PR.
+3. The code is auto-formatted (``hatch fmt``).
+4. The build passes on your PR.
 
 To download, setup and perfom tests, run the following commands on Mac / Linux:
 
@@ -140,7 +141,8 @@ To download, setup and perfom tests, run the following commands on Mac / Linux:
  $ cd mongomock
  $ hatch test
 
-Alternatively, docker-compose can be used to simplify dependency management for local development:
+Alternatively, ``docker-compose`` can be used to simplify dependency management for local 
+development:
 
 .. code-block:: console
 
@@ -164,6 +166,18 @@ If you'd like to run only one test, you can also add the test name at the end of
 NOTE: If the MongoDB image was updated, or you want to try a different MongoDB version in
 ``docker-compose``, you'll have to issue a ``docker compose down`` before you do anything else to
 ensure you're running against the intended version.
+
+Code formatting
+~~~~~~~~~~~~~~~
+
+All code is automatically formatted with `ruff <https://docs.astral.sh/ruff/formatter/>`_ and
+pull-requests are only accepted if the linter passes without complaints. For an open source project
+this is the only feasible way to maintain a consistent code base, without having to fight endless
+code style wars. To invoke the formatter and discover issues run
+
+.. code-block:: console
+
+  $ hatch fmt
 
 utcnow
 ~~~~~~
