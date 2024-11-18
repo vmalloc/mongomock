@@ -5,6 +5,7 @@ try:
     from pymongo.results import InsertOneResult
     from pymongo.results import UpdateResult
 except ImportError:
+
     class _WriteResult:
         def __init__(self, acknowledged=True):
             self.__acknowledged = acknowledged
@@ -109,12 +110,15 @@ except ImportError:
         @property
         def upserted_ids(self):
             if self.__bulk_api_result:
-                return {upsert['index']: upsert['_id'] for upsert in self.bulk_api_result['upserted']}
+                return {
+                    upsert['index']: upsert['_id'] for upsert in self.bulk_api_result['upserted']
+                }
+
 
 __all__ = [
-    "BulkWriteResult",
-    "DeleteResult",
-    "InsertManyResult",
-    "InsertOneResult",
-    "UpdateResult",
+    'BulkWriteResult',
+    'DeleteResult',
+    'InsertManyResult',
+    'InsertOneResult',
+    'UpdateResult',
 ]

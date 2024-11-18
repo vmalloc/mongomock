@@ -1,6 +1,10 @@
 [envs.test]
 features = ["pyexecjs"]
 
+[envs.hatch-static-analysis]
+dependencies = ["ruff==0.7.*"]
+config-path = ".ruff_defaults.toml"
+
 [envs.test.env-vars]
 EXECJS_RUNTIME = "node"
 

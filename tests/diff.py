@@ -1,17 +1,20 @@
 import datetime
 import decimal
-from platform import python_version
 import re
 import uuid
+from platform import python_version
+
 
 try:
-    from bson import decimal128, Regex
+    from bson import decimal128
+    from bson import Regex
+
     _HAVE_PYMONGO = True
 except ImportError:
     _HAVE_PYMONGO = False
 
 
-class _NO_VALUE:
+class _NO_VALUE:  # noqa: N801
     pass
 
 
@@ -19,11 +22,20 @@ class _NO_VALUE:
 NO_VALUE = _NO_VALUE()
 
 _SUPPORTED_BASE_TYPES = (
-    float, bool, str, datetime.datetime, type(None), uuid.UUID, int, bytes, type,
-    type(re.compile('')),)
+    float,
+    bool,
+    str,
+    datetime.datetime,
+    type(None),
+    uuid.UUID,
+    int,
+    bytes,
+    type,
+    type(re.compile('')),
+)
 
 if _HAVE_PYMONGO:
-    _SUPPORTED_TYPES = _SUPPORTED_BASE_TYPES + (decimal.Decimal, decimal128.Decimal128)
+    _SUPPORTED_TYPES = [*_SUPPORTED_BASE_TYPES, decimal.Decimal, decimal128.Decimal128]
 else:
     _SUPPORTED_TYPES = _SUPPORTED_BASE_TYPES
 
@@ -31,6 +43,7 @@ if python_version() < '3.0':
     dict_type = dict
 else:
     from collections import abc
+
     dict_type = abc.Mapping
 
 
@@ -60,15 +73,12 @@ def diff(a, b, path=None):
         a = a.try_compile()
     if _HAVE_PYMONGO and isinstance(b, Regex):
         b = b.try_compile()
-    if isinstance(a, (list, tuple)) or isinstance(b, (list, tuple)) or \
-            isinstance(a, dict_type) or isinstance(b, dict_type):
+    if isinstance(a, (dict_type, list, tuple)):
         return [(path[:], a, b)]
     if not isinstance(a, _SUPPORTED_TYPES):
-        raise NotImplementedError(
-            f'Unsupported diff type: {type(a)}')  # pragma: no cover
+        raise NotImplementedError(f'Unsupported diff type: {type(a)}')  # pragma: no cover
     if not isinstance(b, _SUPPORTED_TYPES):
-        raise NotImplementedError(
-            f'Unsupported diff type: {type(b)}')  # pragma: no cover
+        raise NotImplementedError(f'Unsupported diff type: {type(b)}')  # pragma: no cover
     if a != b:
         return [(path[:], a, b)]
     return []

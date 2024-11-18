@@ -1,10 +1,14 @@
-import mongomock
-from mongomock import helpers
-from packaging import version
 import sys
 import unittest
-from unittest import skipIf, skipUnless
 from unittest import mock
+from unittest import skipIf
+from unittest import skipUnless
+
+from packaging import version
+
+import mongomock
+from mongomock import helpers
+
 
 try:
     from bson import codec_options
@@ -14,7 +18,6 @@ except ImportError:
 
 
 class MongoClientApiTest(unittest.TestCase):
-
     def test__read_preference(self):
         client = mongomock.MongoClient()
         self.assertEqual('Primary', client.read_preference.name)
@@ -75,26 +78,29 @@ class MongoClientApiTest(unittest.TestCase):
     def test__equality(self):
         self.assertEqual(
             mongomock.MongoClient('mongodb://localhost:27017/'),
-            mongomock.MongoClient('mongodb://localhost:27017/'))
-        self.assertEqual(
             mongomock.MongoClient('mongodb://localhost:27017/'),
-            mongomock.MongoClient('localhost'))
+        )
+        self.assertEqual(
+            mongomock.MongoClient('mongodb://localhost:27017/'), mongomock.MongoClient('localhost')
+        )
         self.assertNotEqual(
-            mongomock.MongoClient('/var/socket/mongo.sock'),
-            mongomock.MongoClient('localhost'))
+            mongomock.MongoClient('/var/socket/mongo.sock'), mongomock.MongoClient('localhost')
+        )
 
     @skipIf(sys.version_info < (3,), 'Older versions of Python do not handle hashing the same way')
     @skipUnless(
-        helpers.PYMONGO_VERSION < version.parse('3.12'),
-        "older versions of pymongo didn't have proper hashing")
+        version.parse('3.12') > helpers.PYMONGO_VERSION,
+        "older versions of pymongo didn't have proper hashing",
+    )
     def test__not_hashable(self):
         with self.assertRaises(TypeError):
             {mongomock.MongoClient('localhost')}  # pylint: disable=expression-not-assigned
 
     @skipIf(sys.version_info < (3,), 'Older versions of Python do not handle hashing the same way')
     @skipIf(
-        helpers.PYMONGO_VERSION < version.parse('3.12'),
-        "older versions of pymongo didn't have proper hashing")
+        version.parse('3.12') > helpers.PYMONGO_VERSION,
+        "older versions of pymongo didn't have proper hashing",
+    )
     def test__hashable(self):
         {mongomock.MongoClient('localhost')}  # pylint: disable=expression-not-assigned
 
@@ -127,7 +133,7 @@ class MongoClientApiTest(unittest.TestCase):
         client = mongomock.MongoClient()
         client.one_db.my_collec.insert_one({})
 
-        if helpers.PYMONGO_VERSION >= version.parse('4.0'):
+        if version.parse('4.0') <= helpers.PYMONGO_VERSION:
             with self.assertRaises(TypeError):
                 client.database_names()
             return

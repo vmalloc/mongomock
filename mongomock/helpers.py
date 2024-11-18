@@ -1,12 +1,16 @@
-from collections import abc
-from collections import OrderedDict
-from datetime import datetime, timedelta, tzinfo
-from mongomock import InvalidURI
-from packaging import version
 import re
 import time
-from urllib.parse import unquote_plus
 import warnings
+from collections import abc
+from collections import OrderedDict
+from datetime import datetime
+from datetime import timedelta
+from datetime import tzinfo
+from urllib.parse import unquote_plus
+
+from packaging import version
+
+from mongomock import InvalidURI
 
 
 # Get ObjectId from bson if available or import a crafted one. This is not used
@@ -15,10 +19,12 @@ try:
     from bson import ObjectId  # pylint: disable=unused-import
     from bson import Timestamp
     from pymongo import version as pymongo_version
+
     PYMONGO_VERSION = version.parse(pymongo_version)
     HAVE_PYMONGO = True
 except ImportError:
     from mongomock.object_id import ObjectId  # noqa
+
     Timestamp = None
     # Default Pymongo version if not present.
     PYMONGO_VERSION = version.parse('4.0')
@@ -32,8 +38,8 @@ _SIMPLE_HOST_MATCH = re.compile(r'^([^:]+|\[[^\]]+\])(:([^:]+))?$')
 try:
     from bson.tz_util import utc
 except ImportError:
-    class _FixedOffset(tzinfo):
 
+    class _FixedOffset(tzinfo):
         def __init__(self, offset, name):
             self.__offset = timedelta(minutes=offset)
             self.__name = name
@@ -49,6 +55,7 @@ except ImportError:
 
         def dst(self, dt):
             return timedelta(0)
+
     utc = _FixedOffset(0, 'UTC')
 
 
@@ -75,31 +82,33 @@ def utcnow():
 
 def print_deprecation_warning(old_param_name, new_param_name):
     warnings.warn(
-        "'%s' has been deprecated to be in line with pymongo implementation, a new parameter '%s' "
-        'should be used instead. the old parameter will be kept for backward compatibility '
-        'purposes.' % (old_param_name, new_param_name), DeprecationWarning)
+        f"'{old_param_name}' has been deprecated to be in line with pymongo implementation, "
+        f"a new parameter '{new_param_name}' should be used instead. the old parameter will be "
+        'kept for backward compatibility purposes.',
+        DeprecationWarning,
+        stacklevel=2,
+    )
 
 
 def create_index_list(key_or_list, direction=None):
     """Helper to generate a list of (key, direction) pairs.
 
-       It takes such a list, or a single key, or a single key and direction.
+    It takes such a list, or a single key, or a single key and direction.
     """
     if isinstance(key_or_list, str):
         return [(key_or_list, direction or ASCENDING)]
     if not isinstance(key_or_list, (list, tuple, abc.Iterable)):
-        raise TypeError('if no direction is specified, '
-                        'key_or_list must be an instance of list')
+        raise TypeError('if no direction is specified, ' 'key_or_list must be an instance of list')
     return key_or_list
 
 
 def gen_index_name(index_list):
     """Generate an index name based on the list of keys with directions."""
 
-    return '_'.join(['%s_%s' % item for item in index_list])
+    return '_'.join([f'{item}_{item}' for item in index_list])
 
 
-class hashdict(dict):
+class hashdict(dict):  # noqa: N801
     """hashable dict implementation, suitable for use as a key into other dicts.
 
     >>> h1 = hashdict({'apples': 1, 'bananas':2})
@@ -118,48 +127,41 @@ class hashdict(dict):
     based on answers from
     http://stackoverflow.com/questions/1151658/python-hashable-dicts
     """
+
     def __key(self):
-        return frozenset((k,
-                          hashdict(v) if isinstance(v, dict) else
-                          tuple(v) if isinstance(v, list) else
-                          v)
-                         for k, v in self.items())
+        return frozenset(
+            (k, hashdict(v) if isinstance(v, dict) else tuple(v) if isinstance(v, list) else v)
+            for k, v in self.items()
+        )
 
     def __repr__(self):
         return '{}({})'.format(
-            self.__class__.__name__,
-            ', '.join(f'{str(i[0])}={repr(i[1])}' for i in sorted(self.__key())))
+            self.__class__.__name__, ', '.join(f'{i[0]!s}={i[1]!r}' for i in sorted(self.__key()))
+        )
 
     def __hash__(self):
         return hash(self.__key())
 
     def __setitem__(self, key, value):
-        raise TypeError('{} does not support item assignment'
-                        .format(self.__class__.__name__))
+        raise TypeError(f'{self.__class__.__name__} does not support item assignment')
 
     def __delitem__(self, key):
-        raise TypeError('{} does not support item assignment'
-                        .format(self.__class__.__name__))
+        raise TypeError(f'{self.__class__.__name__} does not support item assignment')
 
     def clear(self):
-        raise TypeError('{} does not support item assignment'
-                        .format(self.__class__.__name__))
+        raise TypeError(f'{self.__class__.__name__} does not support item assignment')
 
     def pop(self, *args, **kwargs):
-        raise TypeError('{} does not support item assignment'
-                        .format(self.__class__.__name__))
+        raise TypeError(f'{self.__class__.__name__} does not support item assignment')
 
     def popitem(self, *args, **kwargs):
-        raise TypeError('{} does not support item assignment'
-                        .format(self.__class__.__name__))
+        raise TypeError(f'{self.__class__.__name__} does not support item assignment')
 
     def setdefault(self, *args, **kwargs):
-        raise TypeError('{} does not support item assignment'
-                        .format(self.__class__.__name__))
+        raise TypeError(f'{self.__class__.__name__} does not support item assignment')
 
     def update(self, *args, **kwargs):
-        raise TypeError('{} does not support item assignment'
-                        .format(self.__class__.__name__))
+        raise TypeError(f'{self.__class__.__name__} does not support item assignment')
 
     def __add__(self, right):
         result = hashdict(self)
@@ -201,13 +203,12 @@ def parse_uri(uri, default_port=27017, warn=False):
 
     'mongodb://host1' becomes 'host1', 27017, None
     """
-    SCHEME = 'mongodb://'
+    SCHEME = 'mongodb://'  # noqa: N806
 
     if not uri.startswith(SCHEME):
-        raise InvalidURI('Invalid URI scheme: URI '
-                         "must begin with '%s'" % (SCHEME,))
+        raise InvalidURI(f"Invalid URI scheme: URI must begin with '{SCHEME}'")
 
-    scheme_free = uri[len(SCHEME):]
+    scheme_free = uri[len(SCHEME) :]
 
     if not scheme_free:
         raise InvalidURI('Must provide at least one hostname or IP.')
@@ -221,28 +222,24 @@ def parse_uri(uri, default_port=27017, warn=False):
             host_part = path_part
             path_part = ''
         if '/' in host_part:
-            raise InvalidURI("Any '/' in a unix domain socket must be"
-                             ' URL encoded: %s' % host_part)
+            raise InvalidURI(f"Any '/' in a unix domain socket must be URL encoded: {host_part}")
         path_part = unquote_plus(path_part)
     else:
         host_part, _, path_part = scheme_free.partition('/')
 
     if not path_part and '?' in host_part:
-        raise InvalidURI("A '/' is required between "
-                         'the host list and any options.')
+        raise InvalidURI("A '/' is required between " 'the host list and any options.')
 
     nodelist = []
-    if ',' in host_part:
-        hosts = host_part.split(',')
-    else:
-        hosts = [host_part]
+    hosts = host_part.split(',') if ',' in host_part else [host_part]
     for host in hosts:
         match = _HOST_MATCH.match(host)
         if not match:
             raise ValueError(
                 "Reserved characters such as ':' must be escaped according RFC "
                 "2396. An IPv6 address literal must be enclosed in '[' and ']' "
-                'according to RFC 2732.')
+                'according to RFC 2732.'
+            )
         host = match.group(2)
         if host.startswith('[') and host.endswith(']'):
             host = host[1:-1]
@@ -252,7 +249,7 @@ def parse_uri(uri, default_port=27017, warn=False):
             try:
                 port = int(port)
                 if port < 0 or port > 65535:
-                    raise ValueError()
+                    raise ValueError
             except ValueError as err:
                 raise ValueError('Port must be an integer between 0 and 65535:', port) from err
         else:
@@ -285,7 +282,8 @@ def split_hosts(hosts, default_port=27017):
             raise ValueError(
                 "Reserved characters such as ':' must be escaped according RFC "
                 "2396. An IPv6 address literal must be enclosed in '[' and ']' "
-                'according to RFC 2732.')
+                'according to RFC 2732.'
+            )
         host = match.group(1)
         if host.startswith('[') and host.endswith(']'):
             host = host[1:-1]
@@ -294,7 +292,7 @@ def split_hosts(hosts, default_port=27017):
             try:
                 port = int(match.group(3))
                 if port < 0 or port > 65535:
-                    raise ValueError()
+                    raise ValueError
             except ValueError as err:
                 raise ValueError('Port must be an integer between 0 and 65535:', port) from err
 
@@ -396,9 +394,9 @@ def set_value_by_dot(doc, key, value):
         try:
             parent[int(child_key)] = value
         except (ValueError, IndexError) as err:
-            raise KeyError() from err
+            raise KeyError from err
     else:
-        raise KeyError()
+        raise KeyError
 
     return doc
 

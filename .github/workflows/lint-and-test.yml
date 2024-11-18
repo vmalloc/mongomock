@@ -18,7 +18,7 @@ jobs:
       - name: Install hatch
         uses: pypa/hatch@install
       - name: Lint style
-        run: hatch run lint:style
+        run: hatch fmt --check
 
   lint-typing:
     runs-on: ubuntu-latest
@@ -31,7 +31,7 @@ jobs:
       - name: Install hatch
         uses: pypa/hatch@install
       - name: Lint typing
-        run: hatch run lint:typing
+        run: hatch run types:check
 
   test:
     runs-on: ubuntu-latest

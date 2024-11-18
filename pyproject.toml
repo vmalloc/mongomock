@@ -52,8 +52,11 @@ source = "vcs"
 packages = ["mongomock"]
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py39"
 line-length = 100
+
+[tool.ruff.format]
+quote-style = "single"
 
 [tool.ruff.lint]
 extend-select = [
@@ -85,14 +88,26 @@ extend-fixable = [
     "UP032",
 ]
 extend-ignore = [
-    "S101",   # Allow usage of asserts
-    "A001",   # Allow shadowing bultins 
-    "A002",   # Allow shadowing bultins 
-    "A003",   # Allow shadowing bultins on classes
-    "N818",   # Allow exceptions without Error suffix
-    "UP006",  # Allow typing.Tuple
-    "UP007",  # Allow typing.Union
-    "PYI024", # Allow use of collections.namedtuple
+    "A001",    # Allow shadowing bultins 
+    "A002",    # Allow shadowing bultins 
+    "A003",    # Allow shadowing bultins on classes
+    "FBT002",  # Allow boolean default positional parameter
+    "N818",    # Allow exceptions without Error suffix
+    "UP006",   # Allow typing.Tuple
+    "UP007",   # Allow typing.Union
+    "PYI024",  # Allow use of collections.namedtuple
+    "S101",    # Allow usage of asserts
+    # TODO: Remove in future pull-requests
+    "ARG001",  # Allow unused function argument
+    "ARG002",  # Allow unused method argument
+    "DTZ001",  # Allow datetime.datetime() without tzinfo
+    "DTZ003",  # Allow datetime.utcnow() 
+    "DTZ004",  # Allow datetime.utcfromtimestamp() 
+    "DTZ005",  # Allow datetime.now() without timezone
+    "EM101",   # Allow raw string in exception
+    "EM102",   # Allow f-string in exception
+    "TRY003",  # Allow specifying messages outside exception class
+    "PLR2004", # Allow magic values in comparison
 ]
 exclude = [
     "mongomock/__init__.pyi",
@@ -114,6 +129,9 @@ max-complexity = 40
 order-by-type = false
 force-single-line = true
 lines-after-imports = 2
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "single"
 
 [tool.doc8]
 max-line-length = 100
