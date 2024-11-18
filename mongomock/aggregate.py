@@ -9,6 +9,7 @@ import functools
 import itertools
 import math
 import numbers
+from typing import Dict, Union
 from packaging import version
 import random
 import re
@@ -1362,6 +1363,20 @@ def _handle_sample_stage(in_collection, unused_database, options):
     return shuffled[:size]
 
 
+def _handle_sort_by_count_stage(in_collection, unused_database, options: Union[str, Dict]):
+    if isinstance(options, Dict):
+        raise NotImplementedError(
+            "Although a dictionary is a valid option for the $sortByCount stage, "
+            'it is currently not implemented in Mongomock.'
+        )
+    field_to_count = options.lstrip("$")
+
+    counter = collections.Counter(
+        [doc[field_to_count] for doc in in_collection if field_to_count in doc]
+    )
+    return [{"_id": key, "count": count} for key, count in counter.most_common()]
+
+
 def _handle_sort_stage(in_collection, unused_database, options):
     sort_array = reversed([{x: y} for x, y in options.items()])
     sorted_collection = in_collection
@@ -1632,7 +1647,7 @@ _PIPELINE_HANDLERS = {
     '$set': _handle_add_fields_stage,
     '$skip': lambda c, d, o: c[o:],
     '$sort': _handle_sort_stage,
-    '$sortByCount': None,
+    '$sortByCount': _handle_sort_by_count_stage,
     '$unset': None,
     '$unwind': _handle_unwind_stage,
 }

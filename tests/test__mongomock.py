@@ -4217,6 +4217,26 @@ class MongoClientAggregateTest(_CollectionComparisonTest):
         ]
         self.cmp.compare_ignore_order.aggregate(pipeline)
 
+    def test__aggregate_sort_by_count_1(self):
+        pipeline = [
+            {
+                "$facet": {
+                    "pipeline_a": [{"$sortByCount": "$a"}],
+                }
+            }
+        ]
+        self.cmp.compare.aggregate(pipeline)
+
+    def test__aggregate_sort_by_count_2(self):
+        pipeline = [
+            {
+                "$facet": {
+                    "pipeline_b": [{"$sortByCount": "$b"}],
+                }
+            }
+        ]
+        self.cmp.compare.aggregate(pipeline)
+
     def test__group_with_missing_fields1(self):
         self.cmp.do.delete_many({})
 
