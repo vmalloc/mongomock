@@ -18,6 +18,17 @@ matrix.pymongo.extra-dependencies = [
 python = ["3.9", "3.10", "3.11", "3.12", "3.13", "pypy3"]
 pymongo = ["3", "4", "none"]
 
+[envs.coverage]
+detached = true
+dependencies = [
+  "coverage[toml]>=6.2",
+  "lxml",
+]
+
+[envs.coverage.scripts]
+combine = "coverage combine {args}"
+xml = "coverage xml"
+
 [envs.types]
 dependencies = [
   "mypy==1.11.*",
