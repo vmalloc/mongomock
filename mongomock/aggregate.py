@@ -275,6 +275,8 @@ class _Parser:
                 return self._handle_type_operator(k, v)
             if k in boolean_operators:
                 return self._handle_boolean_operator(k, v)
+            if k in object_operators:
+                return self._handle_object_operator(k, v)
             if k in text_search_operators + projection_operators + object_operators:
                 raise NotImplementedError(
                     f"'{k}' is a valid operation but it is not supported by Mongomock yet."
@@ -1075,6 +1077,16 @@ class _Parser:
             f"Although '{operator}' is a valid set operator for the aggregation "
             f'pipeline, it is currently not implemented in Mongomock.'
         )
+
+    def _handle_object_operator(self, operator, values):
+        if operator == "$mergeObjects":
+            values = self.parse(values) if isinstance(values, str) else self.parse_many(values)
+            return _merge_objects_operation(values)
+
+        # This should never happen: it is only a safe fallback if something went wrong.
+        raise NotImplementedError( # pragma: no cover
+            "Although '%s' is a valid object operator for the aggregation "
+            'pipeline, it is currently not implemented in Mongomock.' % operator)
 
 
 def _parse_expression(expression, doc_dict, ignore_missing_keys=False):
