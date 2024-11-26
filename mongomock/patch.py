@@ -1,14 +1,19 @@
+import time
 from unittest import mock
 
 from .mongo_client import MongoClient
-import time
+
 
 try:
     import pymongo
-    from pymongo.uri_parser import parse_uri, split_hosts
+    from pymongo.uri_parser import parse_uri
+    from pymongo.uri_parser import split_hosts
+
     _IMPORT_PYMONGO_ERROR = None
 except ImportError as error:
-    from .helpers import parse_uri, split_hosts
+    from .helpers import parse_uri
+    from .helpers import split_hosts
+
     _IMPORT_PYMONGO_ERROR = error
 
 
@@ -46,10 +51,8 @@ def patch(servers='localhost', on_new='error'):
             'pymongo': use an actual pymongo client.
         servers: a list of server that are avaiable.
     """
-    if _IMPORT_PYMONGO_ERROR:
-        PyMongoClient = None
-    else:
-        PyMongoClient = pymongo.MongoClient
+
+    PyMongoClient = None if _IMPORT_PYMONGO_ERROR else pymongo.MongoClient  # noqa: N806
 
     persisted_clients = {}
     parsed_servers = set()
@@ -77,13 +80,13 @@ def patch(servers='localhost', on_new='error'):
             # TODO(pcorpet): Only wait when trying to access the server's data.
             time.sleep(kwargs.get('serverSelectionTimeoutMS', 30000))
             raise pymongo.errors.ServerSelectionTimeoutError(
-                '%s:%d: [Errno 111] Connection refused' % client.address)
+                '%s:%d: [Errno 111] Connection refused' % client.address
+            )
 
         if on_new == 'pymongo':
             return PyMongoClient(*args, **kwargs)
 
-        raise ValueError(
-            'MongoDB server %s:%d does not exist.\n' % client.address + '%s' % parsed_servers)
+        raise ValueError(f'MongoDB server {client.address}:{parsed_servers} does not exist.')
 
     class _PersistentClient:
         def __new__(cls, *args, **kwargs):

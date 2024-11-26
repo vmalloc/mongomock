@@ -157,7 +157,8 @@ class CollectionStore:
 
         with self._rwlock.reader():
             expired_ids = [
-                doc['_id'] for doc in self._documents.values()
+                doc['_id']
+                for doc in self._documents.values()
                 if self._value_meets_expiry(doc.get(ttl_field_name), expiry, ttl_now)
             ]
 
@@ -176,7 +177,7 @@ def _get_min_datetime_from_value(val):
     if not val:
         return datetime.datetime.max
     if isinstance(val, list):
-        return functools.reduce(_min_dt, [datetime.datetime.max] + val)
+        return functools.reduce(_min_dt, [datetime.datetime.max, *val])
     return val
 
 

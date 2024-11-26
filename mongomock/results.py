@@ -1,12 +1,12 @@
 try:
-    from pymongo.results import BulkWriteResult  # pylint: disable=unused-import
-    from pymongo.results import DeleteResult  # pylint: disable=unused-import
-    from pymongo.results import InsertManyResult  # pylint: disable=unused-import
-    from pymongo.results import InsertOneResult  # pylint: disable=unused-import
-    from pymongo.results import UpdateResult  # pylint: disable=unused-import
+    from pymongo.results import BulkWriteResult
+    from pymongo.results import DeleteResult
+    from pymongo.results import InsertManyResult
+    from pymongo.results import InsertOneResult
+    from pymongo.results import UpdateResult
 except ImportError:
-    class _WriteResult:
 
+    class _WriteResult:
         def __init__(self, acknowledged=True):
             self.__acknowledged = acknowledged
 
@@ -15,7 +15,6 @@ except ImportError:
             return self.__acknowledged
 
     class InsertOneResult(_WriteResult):
-
         __slots__ = ('__inserted_id', '__acknowledged')
 
         def __init__(self, inserted_id, acknowledged=True):
@@ -27,7 +26,6 @@ except ImportError:
             return self.__inserted_id
 
     class InsertManyResult(_WriteResult):
-
         __slots__ = ('__inserted_ids', '__acknowledged')
 
         def __init__(self, inserted_ids, acknowledged=True):
@@ -39,7 +37,6 @@ except ImportError:
             return self.__inserted_ids
 
     class UpdateResult(_WriteResult):
-
         __slots__ = ('__raw_result', '__acknowledged')
 
         def __init__(self, raw_result, acknowledged=True):
@@ -65,7 +62,6 @@ except ImportError:
             return self.__raw_result.get('upserted')
 
     class DeleteResult(_WriteResult):
-
         __slots__ = ('__raw_result', '__acknowledged')
 
         def __init__(self, raw_result, acknowledged=True):
@@ -81,7 +77,6 @@ except ImportError:
             return self.__raw_result.get('n', 0)
 
     class BulkWriteResult(_WriteResult):
-
         __slots__ = ('__bulk_api_result', '__acknowledged')
 
         def __init__(self, bulk_api_result, acknowledged):
@@ -118,3 +113,12 @@ except ImportError:
                 return {
                     upsert['index']: upsert['_id'] for upsert in self.bulk_api_result['upserted']
                 }
+
+
+__all__ = [
+    'BulkWriteResult',
+    'DeleteResult',
+    'InsertManyResult',
+    'InsertOneResult',
+    'UpdateResult',
+]

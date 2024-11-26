@@ -1,8 +1,9 @@
 from unittest import mock
 
 from mongomock import Collection as MongoMockCollection
-from mongomock.collection import Cursor as MongoMockCursor
 from mongomock import Database as MongoMockDatabase
+from mongomock.collection import Cursor as MongoMockCursor
+
 
 try:
     from gridfs.grid_file import GridOut as PyMongoGridOut
@@ -30,10 +31,10 @@ class _MongoMockGridOutCursor(MongoMockCursor):
     __next__ = next
 
     def add_option(self, *args, **kwargs):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def remove_option(self, *args, **kwargs):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def _clone_base(self, session):
         return _MongoMockGridOutCursor(self.__root_collection, session=session)
@@ -54,16 +55,16 @@ def enable_gridfs_integration():
     """
 
     if not _HAVE_PYMONGO:
-        raise NotImplementedError("gridfs mocking requires pymongo to work")
+        raise NotImplementedError('gridfs mocking requires pymongo to work')
 
-    Database = (PyMongoDatabase, MongoMockDatabase)
-    Collection = (PyMongoCollection, MongoMockCollection)
+    Database = (PyMongoDatabase, MongoMockDatabase)  # noqa: N806
+    Collection = (PyMongoCollection, MongoMockCollection)  # noqa: N806
 
     try:
-        mock.patch("gridfs.synchronous.grid_file.Database", Database).start()
-        mock.patch("gridfs.synchronous.grid_file.Collection", Collection).start()
-        mock.patch("gridfs.synchronous.grid_file.GridOutCursor", _create_grid_out_cursor).start()
+        mock.patch('gridfs.synchronous.grid_file.Database', Database).start()
+        mock.patch('gridfs.synchronous.grid_file.Collection', Collection).start()
+        mock.patch('gridfs.synchronous.grid_file.GridOutCursor', _create_grid_out_cursor).start()
     except (AttributeError, ModuleNotFoundError):
-        mock.patch("gridfs.Database", Database).start()
-        mock.patch("gridfs.grid_file.Collection", Collection).start()
-        mock.patch("gridfs.GridOutCursor", _create_grid_out_cursor).start()
+        mock.patch('gridfs.Database', Database).start()
+        mock.patch('gridfs.grid_file.Collection', Collection).start()
+        mock.patch('gridfs.GridOutCursor', _create_grid_out_cursor).start()

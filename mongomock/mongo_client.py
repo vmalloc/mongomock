@@ -1,20 +1,28 @@
-from .database import Database
-from .store import ServerStore
 import itertools
+import warnings
+
+from packaging import version
+
 import mongomock
 from mongomock import codec_options as mongomock_codec_options
 from mongomock import ConfigurationError
 from mongomock import helpers
 from mongomock import read_preferences
-from packaging import version
-import warnings
+from mongomock.database import Database
+from mongomock.store import ServerStore
+
 
 try:
     from pymongo.uri_parser import parse_uri, split_hosts
     from pymongo import ReadPreference
+    from pymongo.uri_parser import parse_uri
+    from pymongo.uri_parser import split_hosts
+
     _READ_PREFERENCE_PRIMARY = ReadPreference.PRIMARY
 except ImportError:
-    from .helpers import parse_uri, split_hosts
+    from .helpers import parse_uri
+    from .helpers import split_hosts
+
     _READ_PREFERENCE_PRIMARY = read_preferences.PRIMARY
 
 
@@ -29,9 +37,19 @@ class MongoClient:
     PORT = 27017
     _CONNECTION_ID = itertools.count()
 
-    def __init__(self, host=None, port=None, document_class=dict,
-                 tz_aware=False, connect=True, _store=None, read_preference=None,
-                 uuidRepresentation=None, type_registry = None,**kwargs):
+    def __init__(
+        self,
+        host=None,
+        port=None,
+        document_class=dict,
+        tz_aware=False,
+        connect=True,
+        _store=None,
+        read_preference=None,
+        uuidRepresentation=None,
+        type_registry = None,
+        **kwargs,
+    ):
         if host:
             self.host = host[0] if isinstance(host, (list, tuple)) else host
         else:
@@ -39,9 +57,7 @@ class MongoClient:
         self.port = port or self.PORT
 
         self._tz_aware = tz_aware
-        self._codec_options = mongomock_codec_options.CodecOptions(
-            tz_aware=tz_aware, uuid_representation=uuidRepresentation, 
-            type_registry=type_registry)
+        self._codec_options = mongomock_codec_options.CodecOptions(tz_aware=tz_aware)
         self._database_accesses = {}
         self._store = _store or ServerStore()
         self._id = next(self._CONNECTION_ID)
@@ -83,7 +99,8 @@ class MongoClient:
             return self.address == other.address
         return NotImplemented
 
-    if helpers.PYMONGO_VERSION >= version.parse('3.12'):
+    if version.parse('3.12') <= helpers.PYMONGO_VERSION:
+
         def __hash__(self):
             return hash(self.address)
 
@@ -118,12 +135,15 @@ class MongoClient:
             'bits': 64,
             'debug': False,
             'maxBsonObjectSize': 16777216,
-            'ok': 1
+            'ok': 1,
         }
 
-    if helpers.PYMONGO_VERSION < version.parse('4.0'):
+    if version.parse('4.0') > helpers.PYMONGO_VERSION:
+
         def database_names(self):
-            warnings.warn('database_names is deprecated. Use list_database_names instead.')
+            warnings.warn(
+                'database_names is deprecated. Use list_database_names instead.', stacklevel=2
+            )
             return self.list_database_names()
 
     def list_database_names(self):
@@ -145,8 +165,14 @@ class MongoClient:
             db = self.get_database(name_or_db)
             drop_collections_for_db(db)
 
-    def get_database(self, name=None, codec_options=None, read_preference=None,
-                     write_concern=None, read_concern=None):
+    def get_database(
+        self,
+        name=None,
+        codec_options=None,
+        read_preference=None,
+        write_concern=None,
+        read_concern=None,
+    ):
         if name is None:
             db = self.get_default_database(
                 codec_options=codec_options,
@@ -159,9 +185,13 @@ class MongoClient:
         if db is None:
             db_store = self._store[name]
             db = self._database_accesses[name] = Database(
-                self, name, read_preference=read_preference or self.read_preference,
-                codec_options=codec_options or self._codec_options, _store=db_store,
-                read_concern=read_concern)
+                self,
+                name,
+                read_preference=read_preference or self.read_preference,
+                codec_options=codec_options or self._codec_options,
+                _store=db_store,
+                read_concern=read_concern,
+            )
         return db
 
     def get_default_database(self, default=None, **kwargs):
