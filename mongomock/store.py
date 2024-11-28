@@ -9,7 +9,7 @@ import mongomock
 from mongomock.thread import RWLock
 
 
-class ServerStore(object):
+class ServerStore:
     """Object holding the data for a whole server (many databases)."""
 
     def __init__(self, filename=None):
@@ -43,7 +43,7 @@ class ServerStore(object):
             fh.write(bson.json_util.dumps(self.to_dict()))
 
 
-class DatabaseStore(object):
+class DatabaseStore:
     """Object holding the data for a database (many collections)."""
 
     def __init__(self, _collections=None):
@@ -84,7 +84,7 @@ class DatabaseStore(object):
         return cls({k: CollectionStore.from_dict(v) for k, v in dct.items()})
 
 
-class CollectionStore(object):
+class CollectionStore:
     """Object holding the data for a collection."""
 
     def __init__(self, name, documents=None):
@@ -155,8 +155,7 @@ class CollectionStore(object):
     def documents(self):
         self._remove_expired_documents()
         with self._rwlock.reader():
-            for doc in self._documents.values():
-                yield doc
+            yield from self._documents.values()
 
     def _remove_expired_documents(self):
         for index in self._ttl_indexes.values():
@@ -182,7 +181,8 @@ class CollectionStore(object):
 
         with self._rwlock.reader():
             expired_ids = [
-                doc['_id'] for doc in self._documents.values()
+                doc['_id']
+                for doc in self._documents.values()
                 if self._value_meets_expiry(doc.get(ttl_field_name), expiry, ttl_now)
             ]
 
@@ -208,7 +208,7 @@ def _get_min_datetime_from_value(val):
     if not val:
         return datetime.datetime.max
     if isinstance(val, list):
-        return functools.reduce(_min_dt, [datetime.datetime.max] + val)
+        return functools.reduce(_min_dt, [datetime.datetime.max, *val])
     return val
 
 
