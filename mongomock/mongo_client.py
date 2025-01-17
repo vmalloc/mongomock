@@ -13,6 +13,7 @@ from mongomock.store import ServerStore
 
 
 try:
+    from pymongo.uri_parser import parse_uri, split_hosts
     from pymongo import ReadPreference
     from pymongo.uri_parser import parse_uri
     from pymongo.uri_parser import split_hosts
@@ -44,6 +45,8 @@ class MongoClient:
         connect=True,
         _store=None,
         read_preference=None,
+        uuidRepresentation=None,
+        type_registry = None,
         **kwargs,
     ):
         if host:
