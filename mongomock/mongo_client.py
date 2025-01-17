@@ -32,8 +32,7 @@ def _convert_version_to_list(version_str):
 
 
 class MongoClient:
-
-    HOST = 'localhost'
+    HOST = "localhost"
     PORT = 27017
     _CONNECTION_ID = itertools.count()
 
@@ -150,7 +149,6 @@ class MongoClient:
         return self._store.list_created_database_names()
 
     def drop_database(self, name_or_db):
-
         def drop_collections_for_db(_db):
             db_store = self._store[_db.name]
             for col_name in db_store.list_created_collection_names():
