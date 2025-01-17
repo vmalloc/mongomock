@@ -32,7 +32,7 @@ def _convert_version_to_list(version_str):
 
 
 class MongoClient:
-    HOST = "localhost"
+    HOST = 'localhost'
     PORT = 27017
     _CONNECTION_ID = itertools.count()
 
