@@ -13,7 +13,6 @@ from mongomock.store import ServerStore
 
 
 try:
-    from pymongo.uri_parser import parse_uri, split_hosts
     from pymongo import ReadPreference
     from pymongo.uri_parser import parse_uri
     from pymongo.uri_parser import split_hosts
@@ -45,8 +44,7 @@ class MongoClient:
         connect=True,
         _store=None,
         read_preference=None,
-        uuidRepresentation=None,
-        type_registry = None,
+        type_registry=None,
         **kwargs,
     ):
         if host:
@@ -56,7 +54,12 @@ class MongoClient:
         self.port = port or self.PORT
 
         self._tz_aware = tz_aware
-        self._codec_options = mongomock_codec_options.CodecOptions(tz_aware=tz_aware)
+        self._codec_options = mongomock_codec_options.CodecOptions(
+            tz_aware=tz_aware,
+            type_registry=type_registry,
+            # https://www.mongodb.com/docs/manual/reference/connection-string-options/#mongodb-urioption-urioption.uuidRepresentation
+            uuid_representation=kwargs.get('uuidRepresentation'),
+        )
         self._database_accesses = {}
         self._store = _store or ServerStore()
         self._id = next(self._CONNECTION_ID)

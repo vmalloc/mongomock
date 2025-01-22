@@ -117,7 +117,8 @@ class CodecOptions(collections.namedtuple('CodecOptions', _FIELDS)):
         return codec_options.CodecOptions(
             uuid_representation=uuid_representation,
             unicode_decode_error_handler=self.unicode_decode_error_handler,
-            type_registry=self.type_registry)
+            type_registry=self.type_registry,
+        )
 
 
 def is_supported(custom_codec_options):
