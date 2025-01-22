@@ -107,7 +107,7 @@ def validate_list_or_mapping(option, value):
 
 
 def _bson_encode(document, check_keys, codec_options):
-    if CodecOptions:
+    if codec_options:
         if isinstance(codec_options, mongomock_codec_options.CodecOptions):
             codec_options = codec_options.to_pymongo()
         if isinstance(codec_options, CodecOptions):
