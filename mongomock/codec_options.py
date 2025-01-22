@@ -9,8 +9,10 @@ from mongomock import helpers
 
 try:
     from bson import codec_options
+    from pymongo.common import _UUID_REPRESENTATIONS
 except ImportError:
     codec_options = None
+    _UUID_REPRESENTATIONS = None
 
 
 class TypeRegistry:
@@ -61,8 +63,8 @@ class CodecOptions(collections.namedtuple('CodecOptions', _FIELDS)):
         if not isinstance(tz_aware, bool):
             raise TypeError('tz_aware must be True or False')
 
-        if uuid_representation != _DEFAULT_UUID_REPRESENTATION:
-            raise NotImplementedError('Mongomock does not handle custom uuid_representation yet')
+        if uuid_representation is None:
+            uuid_representation = _DEFAULT_UUID_REPRESENTATION
 
         if unicode_decode_error_handler not in ('strict', None):
             raise NotImplementedError(
@@ -103,6 +105,20 @@ class CodecOptions(collections.namedtuple('CodecOptions', _FIELDS)):
         opts = self._asdict()
         opts.update(kwargs)
         return CodecOptions(**opts)
+
+    def to_pymongo(self):
+        if not codec_options:
+            return None
+
+        uuid_representation = self.uuid_representation
+        if _UUID_REPRESENTATIONS and isinstance(self.uuid_representation, str):
+            uuid_representation = _UUID_REPRESENTATIONS[uuid_representation]
+
+        return codec_options.CodecOptions(
+            uuid_representation=uuid_representation,
+            unicode_decode_error_handler=self.unicode_decode_error_handler,
+            type_registry=self.type_registry,
+        )
 
 
 def is_supported(custom_codec_options):

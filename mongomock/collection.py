@@ -18,9 +18,11 @@ try:
     from bson import BSON
     from bson import json_util
     from bson import SON
+    from bson.codec_options import CodecOptions
     from bson.errors import InvalidDocument
 except ImportError:
     json_utils = SON = BSON = None
+    CodecOptions = None
 try:
     import execjs
 except ImportError:
@@ -102,6 +104,16 @@ def validate_list_or_mapping(option, value):
             'bson.son.SON, or any other type that inherits from '
             'collections.Mapping'
         )
+
+
+def _bson_encode(document, check_keys, codec_options):
+    if codec_options:
+        if isinstance(codec_options, mongomock_codec_options.CodecOptions):
+            codec_options = codec_options.to_pymongo()
+        if isinstance(codec_options, CodecOptions):
+            BSON.encode(document, check_keys=check_keys, codec_options=codec_options)
+    else:
+        BSON.encode(document, check_keys=check_keys)
 
 
 def validate_is_mapping(option, value):
@@ -613,7 +625,7 @@ class Collection:
             if not check_keys:
                 _validate_data_fields(data)
 
-            BSON.encode(data, check_keys=check_keys)
+            _bson_encode(data, check_keys=check_keys, codec_options=self._codec_options)
 
         # Like pymongo, we should fill the _id in the inserted dict (odd behavior,
         # but we need to stick to it), so we must patch in-place the data dict
@@ -1129,7 +1141,7 @@ class Collection:
                     check_keys = version.parse('3.6') > helpers.PYMONGO_VERSION
                     if not check_keys:
                         _validate_data_fields(document)
-                    BSON.encode(document, check_keys=check_keys)
+                    _bson_encode(document, check_keys=check_keys, codec_options=self.codec_options)
                 existing_document.update(self._internalize_dict(document))
                 if existing_document['_id'] != _id:
                     raise OperationFailure(
@@ -1474,7 +1486,7 @@ class Collection:
                                 break
                         continue
 
-                updater(subdocument, field_name_parts[-1], v)
+                updater(subdocument, field_name_parts[-1], v, codec_options=self.codec_options)
                 continue
             # otherwise, we handle it the standard way
             self._update_document_single_field(doc, k, v, updater)
@@ -1510,7 +1522,7 @@ class Collection:
             else:
                 return
         field_name = field_name_parts[-1]
-        updater(doc, field_name, field_value)
+        updater(doc, field_name, field_value, codec_options=self.codec_options)
 
     def _iter_documents(self, filter):
         # Validate the filter even if no documents can be returned.
@@ -2357,7 +2369,7 @@ class Cursor:
         return self
 
 
-def _set_updater(doc, field_name, value):
+def _set_updater(doc, field_name, value, codec_options=None):
     if isinstance(value, (tuple, list)):
         value = copy.deepcopy(value)
     if BSON:
@@ -2368,7 +2380,7 @@ def _set_updater(doc, field_name, value):
                 f'Field name cannot contain the null character and top-level field name '
                 f'cannot start with "$" (found: {field_name})'
             )
-        BSON.encode({field_name: value}, check_keys=check_keys)
+        _bson_encode({field_name: value}, check_keys=check_keys, codec_options=codec_options)
     if isinstance(doc, dict):
         doc[field_name] = value
     if isinstance(doc, list):
@@ -2381,12 +2393,12 @@ def _set_updater(doc, field_name, value):
         doc[field_index] = value
 
 
-def _unset_updater(doc, field_name, value):
+def _unset_updater(doc, field_name, value, codec_options=None):
     if isinstance(doc, dict):
         doc.pop(field_name, None)
 
 
-def _inc_updater(doc, field_name, value):
+def _inc_updater(doc, field_name, value, codec_options=None):
     if isinstance(doc, dict):
         doc[field_name] = doc.get(field_name, 0) + value
 
@@ -2402,17 +2414,17 @@ def _inc_updater(doc, field_name, value):
             doc[field_index] = value
 
 
-def _max_updater(doc, field_name, value):
+def _max_updater(doc, field_name, value, codec_options=None):
     if isinstance(doc, dict):
         doc[field_name] = max(doc.get(field_name, value), value)
 
 
-def _min_updater(doc, field_name, value):
+def _min_updater(doc, field_name, value, codec_options=None):
     if isinstance(doc, dict):
         doc[field_name] = min(doc.get(field_name, value), value)
 
 
-def _pop_updater(doc, field_name, value):
+def _pop_updater(doc, field_name, value, codec_options=None):
     if value not in {1, -1}:
         raise WriteError('$pop expects 1 or -1, found: ' + str(value))
 
@@ -2432,7 +2444,7 @@ def _pop_updater(doc, field_name, value):
         _pop_from_list(doc[field_index], value)
 
 
-def _pop_from_list(list_instance, mongo_pop_value):
+def _pop_from_list(list_instance, mongo_pop_value, codec_options=None):
     if not list_instance:
         return
 
@@ -2442,7 +2454,7 @@ def _pop_from_list(list_instance, mongo_pop_value):
         list_instance.pop(0)
 
 
-def _current_date_updater(doc, field_name, value):
+def _current_date_updater(doc, field_name, value, codec_options=None):
     if isinstance(doc, dict):
         if value == {'$type': 'timestamp'}:
             # TODO(juannyg): get_current_timestamp should also be using helpers utcnow,
