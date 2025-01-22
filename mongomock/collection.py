@@ -1486,7 +1486,7 @@ class Collection:
                                 break
                         continue
 
-                updater(subdocument, field_name_parts[-1], v)
+                updater(subdocument, field_name_parts[-1], v, codec_options=self.codec_options)
                 continue
             # otherwise, we handle it the standard way
             self._update_document_single_field(doc, k, v, updater)
@@ -1522,7 +1522,7 @@ class Collection:
             else:
                 return
         field_name = field_name_parts[-1]
-        updater(doc, field_name, field_value)
+        updater(doc, field_name, field_value, codec_options=self.codec_options)
 
     def _iter_documents(self, filter):
         # Validate the filter even if no documents can be returned.
