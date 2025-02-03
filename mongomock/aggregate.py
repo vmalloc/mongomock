@@ -703,8 +703,7 @@ class _Parser:
         if operator == '$dateTrunc':
             if not isinstance(values, dict):
                 raise OperationFailure(
-                    '$dateTrunc operator must correspond a dict'
-                    'that has "unit" and "date" field.'
+                    '$dateTrunc operator must correspond a dict' 'that has "unit" and "date" field.'
                 )
             unit = values['unit']
             if unit == 'day':
