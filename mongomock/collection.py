@@ -449,6 +449,7 @@ class BulkOperationBuilder:
         collation=None,
         array_filters=None,
         hint=None,
+        sort=None,
     ):
         if array_filters:
             raise_not_implemented(
