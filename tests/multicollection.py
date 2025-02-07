@@ -50,6 +50,17 @@ class Foreach:
             self.___decorators + list(decorators),
         )
 
+    def getattr(self, name):
+        return Foreach(
+            dict(
+                (name, getattr(obj, name))
+                for name, obj in self.___objs.items()
+            ),
+            self.___compare,
+            self.___ignore_order,
+            self.___decorators
+        )
+
 
 class ForeachMethod:
     def __init__(self, objs, compare, ignore_order, method_name, decorators, sort_by):
