@@ -101,10 +101,7 @@ class _Filterer:
             if key == '$expr':
                 parse_expression = self.parse_expression[0]
                 if not parse_expression(
-                        search,
-                        document,
-                        ignore_missing_keys=True,
-                        user_vars=user_vars
+                    search, document, ignore_missing_keys=True, user_vars=user_vars
                 ):
                     return False
                 continue

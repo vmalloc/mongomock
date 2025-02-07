@@ -1087,11 +1087,9 @@ def _parse_expression(expression, doc_dict, ignore_missing_keys=False, user_vars
         ignore_missing_keys: if True, missing keys evaluated by the expression are ignored silently
             if it is possible.
     """
-    return _Parser(
-        doc_dict,
-        user_vars=user_vars,
-        ignore_missing_keys=ignore_missing_keys
-    ).parse(expression)
+    return _Parser(doc_dict, user_vars=user_vars, ignore_missing_keys=ignore_missing_keys).parse(
+        expression
+    )
 
 
 filtering.register_parse_expression(_parse_expression)
@@ -1187,7 +1185,11 @@ def _handle_lookup_stage(in_collection, database, options, user_vars):
                 doc_user_vars = user_vars
             matches = process_pipeline(
                 (doc for doc in foreign_collection.find({})),
-                database, pipeline, None, user_vars=doc_user_vars)
+                database,
+                pipeline,
+                None,
+                user_vars=doc_user_vars,
+            )
         else:
             try:
                 query = helpers.get_value_by_dot(doc, local_field)
@@ -1196,7 +1198,7 @@ def _handle_lookup_stage(in_collection, database, options, user_vars):
             if isinstance(query, list):
                 query = {'$in': query}
             matches = foreign_collection.find({foreign_field: query})
-        doc[local_name] = [foreign_doc for foreign_doc in matches]
+        doc[local_name] = list(matches)
 
     return in_collection
 
@@ -1527,10 +1529,7 @@ def _handle_replace_root_stage(in_collection, unused_database, options, user_var
     for doc in in_collection:
         try:
             new_doc = _parse_expression(
-                new_root,
-                doc,
-                ignore_missing_keys=True,
-                user_vars=user_vars
+                new_root, doc, ignore_missing_keys=True, user_vars=user_vars
             )
         except KeyError:
             new_doc = NOTHING
@@ -1573,10 +1572,7 @@ def _handle_project_stage(in_collection, unused_database, options, user_vars):
         for in_doc, out_doc in zip(in_collection, new_fields_collection):
             with contextlib.suppress(KeyError):
                 out_doc[field] = _parse_expression(
-                    value,
-                    in_doc,
-                    ignore_missing_keys=True,
-                    user_vars=user_vars
+                    value, in_doc, ignore_missing_keys=True, user_vars=user_vars
                 )
     if (method == 'include') == (include_id is not False and include_id != 0):
         filter_list.append('_id')
@@ -1605,7 +1601,8 @@ def _handle_add_fields_stage(in_collection, unused_database, options, user_vars)
         for in_doc, out_doc in zip(in_collection, out_collection):
             try:
                 out_value = _parse_expression(
-                    value, in_doc, user_vars=user_vars, ignore_missing_keys=True)
+                    value, in_doc, user_vars=user_vars, ignore_missing_keys=True
+                )
             except KeyError:
                 continue
             parts = field.split('.')
@@ -1653,9 +1650,7 @@ def _handle_match_stage(in_collection, database, options, user_vars):
         doc
         for doc in in_collection
         if filtering.filter_applies(
-            spec,
-            helpers.patch_datetime_awareness_in_document(doc),
-            user_vars=user_vars
+            spec, helpers.patch_datetime_awareness_in_document(doc), user_vars=user_vars
         )
     ]
 

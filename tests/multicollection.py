@@ -52,13 +52,10 @@ class Foreach:
 
     def getattr(self, name):
         return Foreach(
-            dict(
-                (name, getattr(obj, name))
-                for name, obj in self.___objs.items()
-            ),
+            {name: getattr(obj, name) for name, obj in self.___objs.items()},
             self.___compare,
             self.___ignore_order,
-            self.___decorators
+            self.___decorators,
         )
 
 
