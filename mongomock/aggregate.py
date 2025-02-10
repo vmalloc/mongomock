@@ -1175,7 +1175,22 @@ def _handle_lookup_stage(in_collection, database, options, user_vars):
     pipeline = options.get('pipeline')
     let = options.get('let')
     foreign_collection = database.get_collection(foreign_name)
+
     for doc in in_collection:
+        if local_field and foreign_field:
+            try:
+                query = helpers.get_value_by_dot(doc, local_field)
+            except KeyError:
+                query = None
+            if isinstance(query, list):
+                query = {'$in': query}
+
+            query = {foreign_field: query}
+        else:
+            query = {}
+
+        matches = foreign_collection.find(query)
+
         if pipeline:
             if let:
                 doc_user_vars = dict(user_vars or {})
@@ -1183,21 +1198,15 @@ def _handle_lookup_stage(in_collection, database, options, user_vars):
                     doc_user_vars[var] = _parse_expression(expr, doc, user_vars=user_vars)
             else:
                 doc_user_vars = user_vars
+
             matches = process_pipeline(
-                (doc for doc in foreign_collection.find({})),
+                (doc for doc in matches),
                 database,
                 pipeline,
                 None,
                 user_vars=doc_user_vars,
             )
-        else:
-            try:
-                query = helpers.get_value_by_dot(doc, local_field)
-            except KeyError:
-                query = None
-            if isinstance(query, list):
-                query = {'$in': query}
-            matches = foreign_collection.find({foreign_field: query})
+
         doc[local_name] = list(matches)
 
     return in_collection

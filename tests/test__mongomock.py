@@ -3541,6 +3541,36 @@ class MongoClientAggregateTest(_CollectionComparisonTest):
         ]
         self.cmp.compare.aggregate(pipeline)
 
+    def test__aggregate_lookup_with_concise_correlated_subquery(self):
+        self.cmp.do.delete_many({})
+        self.cmp.do.getattr('labels').insert_many(
+            [
+                {'_id': 1, 'nr': 'N080', 'name': 'milk'},
+                {'_id': 2, 'nr': 'N102', 'name': 'cookies'},
+            ]
+        )
+        self.cmp.do.insert_many(
+            [
+                {'_id': 1, 'nr': 'N102'},
+                {'_id': 2, 'nr': 'N080'},
+                {'_id': 3, 'nr': 'N100'},
+            ]
+        )
+        pipeline = [
+            {
+                '$lookup': {
+                    'from': 'labels',
+                    'localField': 'nr',
+                    'foreignField': 'nr',
+                    'pipeline': [
+                        {'$project': {'name': 1}},
+                    ],
+                    'as': 'labels',
+                }
+            }
+        ]
+        self.cmp.compare.aggregate(pipeline)
+
     def test__aggregate_count(self):
         self.cmp.do.insert_many([{'_id': i} for i in range(5)])
         self.cmp.compare.aggregate([{'$count': 'my_count'}])

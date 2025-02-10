@@ -3262,6 +3262,44 @@ class CollectionAPITest(TestCase):
             actual,
         )
 
+    def test__aggregate_lookup_pipeline_with_concise_correlated_subquery(self):
+        self.db.labels.insert_many(
+            [
+                {'_id': 1, 'nr': 'N080', 'name': 'milk'},
+                {'_id': 2, 'nr': 'N102', 'name': 'cookies'},
+            ]
+        )
+        self.db.stock.insert_many(
+            [
+                {'_id': 1, 'nr': 'N102'},
+                {'_id': 2, 'nr': 'N080'},
+                {'_id': 3, 'nr': 'N100'},
+            ]
+        )
+        pipeline = [
+            {
+                '$lookup': {
+                    'from': 'labels',
+                    'localField': 'nr',
+                    'foreignField': 'nr',
+                    'pipeline': [
+                        {'$project': {'name': 1}},
+                    ],
+                    'as': 'label',
+                }
+            },
+            {'$addFields': {'label': {'$first': '$label.name'}}},
+        ]
+        actual = list(self.db.stock.aggregate(pipeline))
+        self.assertEqual(
+            [
+                {'_id': 1, 'nr': 'N102', 'label': 'cookies'},
+                {'_id': 2, 'nr': 'N080', 'label': 'milk'},
+                {'_id': 3, 'nr': 'N100', 'label': None},
+            ],
+            actual,
+        )
+
     def test__aggregate_graph_lookup_behaves_as_lookup(self):
         self.db.a.insert_one({'_id': 1, 'arr': [2, 4]})
         self.db.b.insert_many(
