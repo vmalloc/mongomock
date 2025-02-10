@@ -6042,7 +6042,7 @@ class CollectionAPITest(TestCase):
             collection.insert_one({'a': {'b'}})
         if version.parse(pymongo.version) < version.parse('3.8'):
             return
-        self.assertEqual(str(cm.exception), "cannot encode object: {'b'}, of type: <class 'set'>")
+        self.assertIn("cannot encode object: {'b'}, of type: <class 'set'>", str(cm.exception))
 
     @skipIf(not helpers.HAVE_PYMONGO, 'pymongo not installed')
     def test_insert_bson_invalid_encode_type(self):

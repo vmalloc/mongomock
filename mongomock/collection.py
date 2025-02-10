@@ -695,6 +695,7 @@ class Collection:
         hint=None,
         session=None,
         let=None,
+        sort=None,
     ):
         if not bypass_document_validation:
             validate_ok_for_update(update)
@@ -708,6 +709,7 @@ class Collection:
                 collation=collation,
                 array_filters=array_filters,
                 let=let,
+                sort=sort,
             ),
             acknowledged=True,
         )
@@ -749,11 +751,12 @@ class Collection:
         bypass_document_validation=False,
         session=None,
         hint=None,
+        sort=None,
     ):
         if not bypass_document_validation:
             validate_ok_for_replace(replacement)
         return UpdateResult(
-            self._update(filter, replacement, upsert=upsert, hint=hint, session=session),
+            self._update(filter, replacement, upsert=upsert, hint=hint, session=session, sort=sort),
             acknowledged=True,
         )
 
