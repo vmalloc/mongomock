@@ -8,6 +8,13 @@
     :target: https://codecov.io/gh/mongomock/mongomock
 
 
+Seeking maintainers
+-------------------
+
+This project is seeking maintainers, see `here <https://github.com/mongomock/mongomock/issues/914>`_
+for more information.
+
+
 What is this?
 -------------
 Mongomock is a small library to help testing Python code that interacts with MongoDB via Pymongo.
