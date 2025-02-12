@@ -3122,11 +3122,6 @@ class CollectionAPITest(TestCase):
             list(actual),
         )
 
-    def test__aggregate_lookup_not_implemented_operators(self):
-        with self.assertRaises(NotImplementedError) as err:
-            self.db.a.aggregate([{'$lookup': {'let': '_id'}}])
-        self.assertIn("Although 'let' is a valid lookup operator for the", str(err.exception))
-
     def test__aggregate_lookup_missing_operator(self):
         with self.assertRaises(mongomock.OperationFailure) as err:
             self.db.a.aggregate(
@@ -3196,6 +3191,114 @@ class CollectionAPITest(TestCase):
                 ]
             )
         self.assertIn("Although '.' is valid in the 'as' parameters ", str(err.exception))
+
+    def test__aggregate_lookup_pipeline(self):
+        self.db.orders.insert_many(
+            [
+                {'_id': 1, 'item': 'almonds', 'price': 12, 'ordered': 2},
+                {'_id': 2, 'item': 'pecans', 'price': 20, 'ordered': 1},
+                {'_id': 3, 'item': 'cookies', 'price': 10, 'ordered': 60},
+            ]
+        )
+        self.db.warehouses.insert_many(
+            [
+                {'_id': 1, 'stock_item': 'almonds', 'warehouse': 'A', 'instock': 120},
+                {'_id': 2, 'stock_item': 'pecans', 'warehouse': 'A', 'instock': 80},
+                {'_id': 3, 'stock_item': 'almonds', 'warehouse': 'B', 'instock': 60},
+                {'_id': 4, 'stock_item': 'cookies', 'warehouse': 'B', 'instock': 40},
+                {'_id': 5, 'stock_item': 'cookies', 'warehouse': 'A', 'instock': 80},
+            ]
+        )
+        pipeline = [
+            {
+                '$lookup': {
+                    'from': 'warehouses',
+                    'let': {'order_item': '$item', 'order_qty': '$ordered'},
+                    'pipeline': [
+                        {
+                            '$match': {
+                                '$expr': {
+                                    '$and': [
+                                        {'$eq': ['$stock_item', '$$order_item']},
+                                        {'$gte': ['$instock', '$$order_qty']},
+                                    ]
+                                }
+                            }
+                        },
+                        {'$project': {'stock_item': 0, '_id': 0}},
+                    ],
+                    'as': 'stockdata',
+                }
+            }
+        ]
+        actual = list(self.db.orders.aggregate(pipeline))
+        self.assertEqual(
+            [
+                {
+                    '_id': 1,
+                    'item': 'almonds',
+                    'price': 12,
+                    'ordered': 2,
+                    'stockdata': [
+                        {'warehouse': 'A', 'instock': 120},
+                        {'warehouse': 'B', 'instock': 60},
+                    ],
+                },
+                {
+                    '_id': 2,
+                    'item': 'pecans',
+                    'price': 20,
+                    'ordered': 1,
+                    'stockdata': [{'warehouse': 'A', 'instock': 80}],
+                },
+                {
+                    '_id': 3,
+                    'item': 'cookies',
+                    'price': 10,
+                    'ordered': 60,
+                    'stockdata': [{'warehouse': 'A', 'instock': 80}],
+                },
+            ],
+            actual,
+        )
+
+    def test__aggregate_lookup_pipeline_with_concise_correlated_subquery(self):
+        self.db.labels.insert_many(
+            [
+                {'_id': 1, 'nr': 'N080', 'name': 'milk'},
+                {'_id': 2, 'nr': 'N102', 'name': 'cookies'},
+            ]
+        )
+        self.db.stock.insert_many(
+            [
+                {'_id': 1, 'nr': 'N102'},
+                {'_id': 2, 'nr': 'N080'},
+                {'_id': 3, 'nr': 'N100'},
+            ]
+        )
+        pipeline = [
+            {
+                '$lookup': {
+                    'from': 'labels',
+                    'localField': 'nr',
+                    'foreignField': 'nr',
+                    'pipeline': [
+                        {'$project': {'name': 1}},
+                    ],
+                    'as': 'label',
+                }
+            },
+            {'$addFields': {'label': {'$first': '$label.name'}}},
+        ]
+        actual = list(self.db.stock.aggregate(pipeline))
+        self.assertEqual(
+            [
+                {'_id': 1, 'nr': 'N102', 'label': 'cookies'},
+                {'_id': 2, 'nr': 'N080', 'label': 'milk'},
+                {'_id': 3, 'nr': 'N100', 'label': None},
+            ],
+            actual,
+        )
 
     def test__aggregate_graph_lookup_behaves_as_lookup(self):
         self.db.a.insert_one({'_id': 1, 'arr': [2, 4]})
@@ -5939,7 +6042,7 @@ class CollectionAPITest(TestCase):
             collection.insert_one({'a': {'b'}})
         if version.parse(pymongo.version) < version.parse('3.8'):
             return
-        self.assertEqual(str(cm.exception), "cannot encode object: {'b'}, of type: <class 'set'>")
+        self.assertIn("cannot encode object: {'b'}, of type: <class 'set'>", str(cm.exception))
 
     @skipIf(not helpers.HAVE_PYMONGO, 'pymongo not installed')
     def test_insert_bson_invalid_encode_type(self):
